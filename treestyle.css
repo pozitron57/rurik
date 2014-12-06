@@ -1,0 +1,137 @@
+body {
+    }
+
+#tree-container {
+    position: relative;
+}
+
+
+#d3-determined {
+    float: right;
+    width: 60%;
+    }
+
+#viezzhatext {
+    color: #eeffff;
+    font-size: 9pt;
+    float: left;
+    width: 35%;
+    height: 50px;
+    position: absolute;
+    padding: 9px 0px 0px 8px;
+    }
+
+#viezzhabout {
+    color: #eeffff;
+    font-size: 9pt;
+    float: left;
+    left: 35%;
+    height: 50px;
+    position: absolute;
+    }
+
+#skolzec {
+    position: fixed;
+    top: -10px;
+    left: 10px;
+    -webkit-transition-duration: 0.3s;
+    -moz-transition-duration: 0.3s;
+    -o-transition-duration: 0.3s;
+    transition-duration: 0.3s;
+}
+#skolzec_inner {
+    height: 50px;
+    background: -moz-linear-gradient(#575757, #A0A0A0);
+    background: -webkit-gradient(linear, 0 0, 0 95%, from(#575757), to(#a0a0a0));
+    background: -o-linear-gradient(top,rgb(88,88,88),rgb(160,160,160)); /* opera */
+    position: fixed;
+    width: 100%;
+    top: -40px;
+    left: 0px;
+    -webkit-transition-duration: 0.3s;
+    -moz-transition-duration: 0.3s;
+    -o-transition-duration: 0.3s;
+    transition-duration: 0.3s;
+}
+#skolzec:hover {
+    top: 20px;
+}
+#skolzec:hover #skolzec_inner {
+    top: 0;
+}
+
+
+	.node {
+    cursor: pointer;
+  }
+
+  .overlay{
+      background-color: #ffffff;
+  }
+   
+  .node circle {
+    fill: #0055ff;
+    stroke: #bc5723;
+    stroke-width: 1.9px;
+  }
+   
+  .node text {
+    font-size:11px;
+    font-family:sans-serif;
+  }
+   
+  .link {
+    fill: none;
+    stroke: #ccc;
+    stroke-width: 0.9px;
+  }
+
+  .templink {
+    fill: none;
+    stroke: red;
+    stroke-width: 3px;
+  }
+
+  .ghostCircle.show{
+      display:block;
+  }
+
+  .ghostCircle, .activeDrag .ghostCircle{
+       display: none;
+  }
+
+  button {
+    color: #eeffff;
+    font-family: Times;
+    font-size: 10pt;
+    background: -moz-linear-gradient(#575757, #A0A0A0);
+    background: -webkit-gradient(linear, 0 0, 0 95%, from(#575757), to(#a0a0a0));
+    background: -o-linear-gradient(top,rgb(88,88,88),rgb(160,160,160)); /* opera */
+    width: 70px; 
+    height: 50px;
+    float: right;
+    border: 0px solid;
+    border-left: 1px solid darkgray;
+    padding: 0px 2px;
+}
+
+button:hover{
+    text-shadow: 0 1px #000;
+    background: -moz-linear-gradient(#A0A0A0, #575757);
+    background: -webkit-gradient(linear, 0 0, 0 95%, from(#a0a0a0), to(#575757));
+    background: -o-linear-gradient(top,rgb(160,160,160),rgb(88,88,88)); /* opera */
+}
+
+select {
+    float: right;
+    background: white;
+    margin: 10px 5px 0 4px;
+    }
+
+ text {
+    color: #eeffff;
+    padding: 0px 4px;
+    float: right;
+    font-size: 9pt;
+    padding: 14px 0 0 0;
+    }

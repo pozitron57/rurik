@@ -1,0 +1,54 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta name="keywords" content="Родословная, Рюриковичи, генеалогия, князь, Русь">
+		<meta name="description" content="Генеалогическое древо (родословная) для русских князей. Рюриковичи. Все ветви до колена Ивана Грозного.">
+        <link rel="stylesheet" href="treestyle.css" type="text/css">
+        <link rel="icon" href="favicon.ico" type="image/x-icon">
+        <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+        <title>Родословная князей русских</title>
+        <script src="jquery-1.10.2.min.js"></script>
+        <script src="d3.js" charset="utf-8"></script>
+        <script src="dndTree.js"></script>
+     </head>
+
+<body>
+
+    <div id="tree-container">
+        <div id="skolzec"> 
+            <p onmouseout="throwAway(this)" style="position: fixed; left: 43%; color: white; background: steelblue; padding: 13px 10px 7px 10px; font-size: 11pt;"> Что делать-то?</p>
+            <div id="skolzec_inner">
+                <div id="viezzhatext"> Масштабируйте колёсиком; перемещайтесь, перетаскивая фон. <br> Щёлкните на Рюрика.
+                </div>
+                <div id="viezzhabout"><button onclick="location.href='http://lisakov.com/blog/pedigree';">О&nbsp;странице</button>
+                </div>
+                <div id="d3-determined">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    function throwAway(x) {
+        x.style.top = "-200px";
+        }
+    </script>
+
+    <!-- <div style="position: absolute; top: -3px; font-size: 9.5pt; width: 45%; background: white;">Масштабируйте колёсиком; перемещайтесь, перетаскивая фон. <br> Щёлкните на Рюрика.</div>  
+    <div style="position: absolute; font-size: 9pt;left: 45%; width: 10%; background: white;"><a href="http://lisakov.com/blog/pedigree/" target ="_blank">О&nbsp;странице</a> </div>
+    <div style="position: absolute; right: 0; width: 45%;" id="knopki-iz-d3"></div> -->
+
+<script>
+    var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-56269876-1']);
+  _gaq.push(['_trackPageview']);
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://' : 'http://') + 'stats.g.doubleclick.net/dc.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script> 
+</body>
+</html>
