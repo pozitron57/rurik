@@ -376,17 +376,33 @@ treeJSON = d3.json("py_generated.json", function(error, treeData) {
 
     function click(d) {
         if (d3.event.defaultPrevented) return; // click suppressed
-        var nodes = [d];
-        for (var i = 0; i < numberOfGenerations; i++ ) {
-            if (nodes.length == 0) {break;};
-            var new_nodes = [];
-            nodes.forEach(function(x){
-                toggleChildren(x);
-                if (x.children) {
-                    x.children.forEach( function(y){new_nodes.push(y);} )
-                }
-            });
-            nodes = new_nodes;
+        if (d._children) {
+            var nodes = [d];
+            for (var i = 0; i < numberOfGenerations; i++ ) {
+                if (nodes.length == 0) {break;};
+                var new_nodes = [];
+                nodes.forEach(function(x) {
+                    if (x.children) {
+                        x.children.forEach( function(y) {
+                            new_nodes.push(y);
+                        } );
+                    } else {
+                        x.children = [];
+                    }
+                    if (x._children) {
+                        x._children.forEach( function(y) {
+                            new_nodes.push(y);
+                            x.children.push(y);
+                        } );
+                        x._children = null;
+                    }
+                });
+                nodes = new_nodes;
+            }
+        }
+        else if (d.children) {
+            d._children = d.children;
+            d.children = null;
         }
         update(d);
         centerNode(d); //lisakov do not center node each time, annoying
@@ -449,9 +465,9 @@ treeJSON = d3.json("py_generated.json", function(error, treeData) {
 
         nodeEnter.append("text")
             //.attr("x", function(d) {     //lisakov probably it is an odd function. This -10 and 10 doesn't do anything
-                //return d.children || d._children ? 
+                //return d.children || d._children ?
                 //(d.radius + 4) * -1 : d.radius + 4 })  //lisakov this line for name placement regarding his circle's radius
-                //return d.children || d._children ? -10 : 10; }) // lisakov tak bilo 
+                //return d.children || d._children ? -10 : 10; }) // lisakov tak bilo
                 //return d.children || d._children ? -10 : 10; })  //lisakov probably it is odd line
             .attr("dy", "-.05em")
             //.attr('class', 'nodeText')
