@@ -1,36 +1,53 @@
-body {
-    }
-
 #tree-container {
     position: relative;
 }
 
-
-#d3-determined {
-    float: right;
-    width: 60%;
-    }
-
-#viezzhatext {
-    color: #eeffff;
-    font-size: 9pt;
-    float: left;
-    width: 35%;
-    height: 50px;
+#ostranice {
     position: absolute;
-    padding: 9px 0px 0px 8px;
+    right: 0;
+    height: 100%;
     }
 
-#viezzhabout {
-    color: #eeffff;
-    font-size: 9pt;
-    float: left;
-    left: 35%;
-    height: 50px;
+#skrit-vseh {
     position: absolute;
+    right: 105px;
+    height: 100%;
     }
 
-#skolzec {
+#pokaz-vseh {
+    position: absolute;
+    right: 210px;
+    height: 100%;
+    }
+
+#vipad-spisok {
+    position: absolute;
+    right: 315px;
+    height: 100%;
+    }
+
+#raskrivat {
+    height: 100%;
+    position: absolute;
+    right: 380px;
+    width: 170px;
+    padding: 2px 5px 0px 5px;
+    color: #eeffff;
+    font-size: 12.5pt;
+    font-family: Times;
+    text-align: center;
+    }
+
+#masshtabiruyte {
+    position: absolute;
+    color: #eeffff;
+    font-size: 12.5pt;
+    font-family: Times;
+    width: 400px;
+    padding: 2px 0px 0px 5px;
+    }
+
+/*#skolzec {
     position: fixed;
     top: -10px;
     left: 10px;
@@ -39,11 +56,12 @@ body {
     -o-transition-duration: 0.3s;
     transition-duration: 0.3s;
 }
+
 #skolzec_inner {
-    height: 50px;
+    min-height: 50px;
     background: -moz-linear-gradient(#575757, #A0A0A0);
     background: -webkit-gradient(linear, 0 0, 0 95%, from(#575757), to(#a0a0a0));
-    background: -o-linear-gradient(top,rgb(88,88,88),rgb(160,160,160)); /* opera */
+    background: -o-linear-gradient(top,rgb(88,88,88),rgb(160,160,160));
     position: fixed;
     width: 100%;
     top: -40px;
@@ -52,13 +70,26 @@ body {
     -moz-transition-duration: 0.3s;
     -o-transition-duration: 0.3s;
     transition-duration: 0.3s;
-}
+} 
+
 #skolzec:hover {
     top: 20px;
 }
 #skolzec:hover #skolzec_inner {
     top: 0;
+}*/ 
+
+#skolzec_inner {
+    position: fixed;
+    min-height: 45px;
+    background: -moz-linear-gradient(#575757, #A0A0A0);
+    background: -webkit-gradient(linear, 0 0, 0 95%, from(#575757), to(#a0a0a0));
+    background: -o-linear-gradient(top,rgb(88,88,88),rgb(160,160,160));
+    width: 100%;
+    left: 0px;
+    top: 0px;
 }
+
 
 
 	.node {
@@ -76,7 +107,7 @@ body {
   }
    
   .node text {
-    font-size:11px;
+    font-size:12px;
     font-family:sans-serif;
   }
    
@@ -86,7 +117,7 @@ body {
     stroke-width: 0.9px;
   }
 
-  .templink {
+  /*.templink {
     fill: none;
     stroke: red;
     stroke-width: 3px;
@@ -98,18 +129,17 @@ body {
 
   .ghostCircle, .activeDrag .ghostCircle{
        display: none;
-  }
+  }*/
 
   button {
+    height: 100%;
+    width: 105px; 
     color: #eeffff;
     font-family: Times;
-    font-size: 10pt;
+    font-size: 13pt;
     background: -moz-linear-gradient(#575757, #A0A0A0);
     background: -webkit-gradient(linear, 0 0, 0 95%, from(#575757), to(#a0a0a0));
     background: -o-linear-gradient(top,rgb(88,88,88),rgb(160,160,160)); /* opera */
-    width: 70px; 
-    height: 50px;
-    float: right;
     border: 0px solid;
     border-left: 1px solid darkgray;
     padding: 0px 2px;
@@ -125,13 +155,5 @@ button:hover{
 select {
     float: right;
     background: white;
-    margin: 10px 5px 0 4px;
-    }
-
- text {
-    color: #eeffff;
-    padding: 0px 4px;
-    float: right;
-    font-size: 9pt;
-    padding: 14px 0 0 0;
+    margin: 10px 15px 0 -5px;
     }

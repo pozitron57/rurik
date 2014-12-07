@@ -17,18 +17,31 @@
 <body>
 
     <div id="tree-container">
-        <div id="skolzec"> 
-            <p onmouseout="throwAway(this)" style="position: fixed; left: 43%; color: white; background: steelblue; padding: 13px 10px 7px 10px; font-size: 11pt;"> Что делать-то?</p>
+      <!--  <div id="skolzec"> 
+            <p onmouseout="throwAway(this)" style="position: fixed; left: 43%; color: white; background: steelblue; padding: 13px 10px 7px 10px; font-size: 11pt;"> Что делать-то?</p> -->
+
             <div id="skolzec_inner">
-                <div id="viezzhatext"> Масштабируйте колёсиком; перемещайтесь, перетаскивая фон. <br> Щёлкните на Рюрика.
+                <div id="masshtabiruyte"> Масштабируйте колёсиком; перемещайтесь, перетаскивая фон. Щёлкните на Рюрика.
                 </div>
-                <div id="viezzhabout"><button onclick="location.href='http://lisakov.com/blog/pedigree';">О&nbsp;странице</button>
+
+                <div id="ostranice" title="Перейти на страницу информации об авторах, идеях и планах дальнейшей разработки. Откроется в новой вкладке."><button onclick="window.open('http://lisakov.com/blog/pedigree')">О&nbsp;странице</button>
                 </div>
-                <div id="d3-determined">
+
+                <div id="pokaz-vseh" title="Не стоит нажимать эту кнопку! Здесь почти тысяча человек...">
                 </div>
+
+                <div id="skrit-vseh">
+                </div>
+
+                <div id="vipad-spisok" title="Выбрать, сколько поколений показывать по первому щелчку на князя. Если, например, после Рюрика уже было раскрыто 5 поколений и затем скрыто щелчком по Рюрику, то по следующему щелчку на Рюрика восстановится предыдущий вид — этот параметр будет проигнорирован.">
+                </div>
+
+                <div id="raskrivat" title="Выбрать, сколько поколений показывать по первому щелчку на князя. Если, например, после Рюрика уже было раскрыто 5 поколений и затем скрыто щелчком по Рюрику, то по следующему щелчку на Рюрика восстановится предыдущий вид — этот параметр будет проигнорирован." >
+                </div>
+
             </div>
         </div>
-    </div>
+    <!-- </div> -->
 
     <script>
     function throwAway(x) {
