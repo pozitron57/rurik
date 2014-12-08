@@ -17,15 +17,17 @@ treeJSON = d3.json("py_generated.json", function(error, treeData) {
     var numberOfGenerations = 2;
     var maxNuberOfGenerations = 20;
 
-    var buttonShowEveryone = d3.select("#d3-determined").append("button")
+    var buttonShowEveryone = d3.select("#pokaz-vseh").append("button")
+    // this text means "Show everebody"
         .text("Показать всех")
         .on('click', function (data, index) {
             expandAll(root);
             update(root);
         });
 
-    var buttonHideEveryone = d3.select("#d3-determined").append("button")
-        .text("Скрыть всех")
+    var buttonHideEveryone = d3.select("#skrit-vseh").append("button")
+    // this text means "Hide everebody"
+        .text("Спрятать всех")
         .on('click', function (data, index) {
             root.children.forEach(collapse);
             update(root);
@@ -36,7 +38,7 @@ treeJSON = d3.json("py_generated.json", function(error, treeData) {
         numberOfGenerations = $("select").val();
     });
 
-    var formNumberOfGenerations = d3.select("#d3-determined").append("select");
+    var formNumberOfGenerations = d3.select("#vipad-spisok").append("select");
     for (var i = 1; i <= maxNuberOfGenerations; i++) {
         var option = formNumberOfGenerations.append("option")
             .attr("value", i)
@@ -48,13 +50,13 @@ treeJSON = d3.json("py_generated.json", function(error, treeData) {
     $("select").change(function () {
         numberOfGenerations = $("select").val();
     });
-
-    var textNumberOfGenerations = d3.select("#d3-determined").append("text")
-        .text(" Раскрывать поколений по щелчку: ");
+    var textNumberOfGenerations = d3.select("#raskrivat").append("text")
+    // this text means "Choose how much gererations to be expanded on click"
+        .text("Раскрывать поколений по щелчку:");
 
     // size of the diagram
-    var viewerWidth = $(document).width() - 10; //lisakov minus 50 to avoid scroll bars
-    var viewerHeight = $(document).height() - 20;
+    var viewerWidth = $(document).width() - 8; //lisakov minus 50 to avoid scroll bars
+    var viewerHeight = $(document).height() - 16;
 
     var tree = d3.layout.tree()
         .size([viewerHeight, viewerWidth]);
@@ -91,13 +93,13 @@ treeJSON = d3.json("py_generated.json", function(error, treeData) {
     });
 
 
-    // sort the tree according to the node names
+    // sort the tree according to the node names. Do not sort family tree!
 
-    function sortTree() {
-        tree.sort(function(a, b) {
-            return b.name.toLowerCase() < a.name.toLowerCase() ? 1 : -1;
-        });
-    }
+//    function sortTree() {
+//        tree.sort(function(a, b) {
+//            return b.name.toLowerCase() < a.name.toLowerCase() ? 1 : -1;
+//        });
+//    }
     // Sort the tree initially incase the JSON isn't in a sorted order.
     //sortTree();
 
@@ -140,7 +142,7 @@ treeJSON = d3.json("py_generated.json", function(error, treeData) {
         .on("zoom", zoom);
 
 
-//// lisakov stop nodes dragging!!! It is dangerous.
+//// lisakov stop nodes dragging, stop anarchy! It's a family tree after all.
 //   // function initiateDrag(d, domNode) {
 //        draggingNode = d;
 //        d3.select(domNode).select('.ghostCircle').attr('pointer-events', 'none');
@@ -183,6 +185,7 @@ treeJSON = d3.json("py_generated.json", function(error, treeData) {
 //        dragStarted = null;
 //    }
 //
+
     // define the baseSvg, attaching a class for styling and the zoomListener
     var baseSvg = d3.select("#tree-container").append("svg")
         .attr("width", viewerWidth)
@@ -210,28 +213,29 @@ treeJSON = d3.json("py_generated.json", function(error, treeData) {
                 initiateDrag(d, domNode);
             }
 
-            // get coords of mouseEvent relative to svg container to allow for panning
-            relCoords = d3.mouse($('svg').get(0));
-            if (relCoords[0] < panBoundary) {
-                panTimer = true;
-                pan(this, 'left');
-            } else if (relCoords[0] > ($('svg').width() - panBoundary)) {
-
-                panTimer = true;
-                pan(this, 'right');
-            } else if (relCoords[1] < panBoundary) {
-                panTimer = true;
-                pan(this, 'up');
-            } else if (relCoords[1] > ($('svg').height() - panBoundary)) {
-                panTimer = true;
-                pan(this, 'down');
-            } else {
-                try {
-                    clearTimeout(panTimer);
-                } catch (e) {
-
-                }
-            }
+//            // get coords of mouseEvent relative to svg container to allow for panning
+//lisakov commented this 07 december
+//            relCoords = d3.mouse($('svg').get(0));
+//            if (relCoords[0] < panBoundary) {
+//                panTimer = true;
+//                pan(this, 'left');
+//            } else if (relCoords[0] > ($('svg').width() - panBoundary)) {
+//
+//                panTimer = true;
+//                pan(this, 'right');
+//            } else if (relCoords[1] < panBoundary) {
+//                panTimer = true;
+//                pan(this, 'up');
+//            } else if (relCoords[1] > ($('svg').height() - panBoundary)) {
+//                panTimer = true;
+//                pan(this, 'down');
+//            } else {
+//                try {
+//                    clearTimeout(panTimer);
+//                } catch (e) {
+//
+//                }
+//            }
 
             d.x0 += d3.event.dy;
             d.y0 += d3.event.dx;
@@ -268,19 +272,20 @@ treeJSON = d3.json("py_generated.json", function(error, treeData) {
             }
         });
 
-    function endDrag() {
-        selectedNode = null;
-        d3.selectAll('.ghostCircle').attr('class', 'ghostCircle');
-        d3.select(domNode).attr('class', 'node');
-        // now restore the mouseover event or we won't be able to drag a 2nd time
-        d3.select(domNode).select('.ghostCircle').attr('pointer-events', '');
-        updateTempConnector();
-        if (draggingNode !== null) {
-            update(root);
-            centerNode(draggingNode);
-            draggingNode = null;
-        }
-    }
+//lisakov commented this 07 december
+//    function endDrag() {
+//        selectedNode = null;
+//        d3.selectAll('.ghostCircle').attr('class', 'ghostCircle');
+//        d3.select(domNode).attr('class', 'node');
+//        // now restore the mouseover event or we won't be able to drag a 2nd time
+//        d3.select(domNode).select('.ghostCircle').attr('pointer-events', '');
+//        updateTempConnector();
+//        if (draggingNode !== null) {
+//            update(root);
+//            centerNode(draggingNode);
+//            draggingNode = null;
+//        }
+//    }
 
     // Helper functions for collapsing and expanding nodes.
 
@@ -359,21 +364,21 @@ treeJSON = d3.json("py_generated.json", function(error, treeData) {
         zoomListener.translate([x, y]);
     }
 
-    // Toggle children function
-
-    function toggleChildren(d) {
-        if (d.children) {
-            d._children = d.children;
-            d.children = null;
-        } else if (d._children) {
-            d.children = d._children;
-            d._children = null;
-        }
-        return d;
-    }
+//    // Toggle children function
+//lisakov probably may be deleted due to new following function
+//    function toggleChildren(d) {
+//        if (d.children) {
+//            d._children = d.children;
+//            d.children = null;
+//        } else if (d._children) {
+//            d.children = d._children;
+//            d._children = null;
+//        }
+//        return d;
+//    }
 
     // Toggle children on click.
-
+    //hombit-driven awesome function to expand choosen amount of generations
     function click(d) {
         if (d3.event.defaultPrevented) return; // click suppressed
         if (d._children) {
@@ -405,9 +410,8 @@ treeJSON = d3.json("py_generated.json", function(error, treeData) {
             d.children = null;
         }
         update(d);
-        centerNode(d); //lisakov do not center node each time, annoying
+        centerNode(d);  //may be liscenterNode looks more sexy here?
     }
-    // lisakov func trying make work onmouseover
 
     function update(source) {
         // Compute the new height, function counts total children of root node and sets tree height accordingly.
@@ -426,7 +430,7 @@ treeJSON = d3.json("py_generated.json", function(error, treeData) {
             }
         };
         childCount(0, root);
-        var newHeight = d3.max(levelWidth) * 30; // lisakov set px per line.
+        var newHeight = d3.max(levelWidth) * 29; // lisakov set px per line.
         tree = tree.size([newHeight, viewerWidth]);
 
         // Compute the new tree layout.
@@ -467,7 +471,6 @@ treeJSON = d3.json("py_generated.json", function(error, treeData) {
             //.attr("x", function(d) {     //lisakov probably it is an odd function. This -10 and 10 doesn't do anything
                 //return d.children || d._children ?
                 //(d.radius + 4) * -1 : d.radius + 4 })  //lisakov this line for name placement regarding his circle's radius
-                //return d.children || d._children ? -10 : 10; }) // lisakov tak bilo
                 //return d.children || d._children ? -10 : 10; })  //lisakov probably it is odd line
             .attr("dy", "-.05em")
             //.attr('class', 'nodeText')
@@ -492,7 +495,7 @@ treeJSON = d3.json("py_generated.json", function(error, treeData) {
             .style("stroke", function(d) { return d.granica; })
             .style("fill", function(d) {
                 return d._children ? "#FFC576" : "white";});
-                //lisakov a kak zafiga4it peremennie tuda
+                //lisakov wondering how to use variables instead...
 
         // Transition nodes to their new position.
         var nodeUpdate = node.transition()
@@ -526,17 +529,8 @@ treeJSON = d3.json("py_generated.json", function(error, treeData) {
             });
 
         // Enter any new links at the parent's previous position.
-//lisakov color links
-//            link.enter().insert("path", "g")
-//                .attr("class", "link")
-//                .attr("d", diagonal);
-//
-//            link.enter().insert("path", "g")
-//                .attr("class", "link")
-//                .style("stroke", function(d) { return d.target.liniya; })
-//                .attr("d", diagonal);
+        // lisakov modified to take colors fron json
 
-//links bilo tak
         link.enter().insert("path", "g")
             .attr("class", "link")
             .style("stroke", function(d) { return d.target.liniya; })
