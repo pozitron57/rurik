@@ -136,4 +136,3 @@ print('vsevolod = ', vsevolod)
 print('bryachislav = ', bryachislav)
 print('yaroslav = ', yaroslav)
 print('rurik = ', rurik)
-
