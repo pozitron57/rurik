@@ -9,9 +9,9 @@ import fileinput
 ### and first one too
 
 ### REPLACE PATHES TO YOURS
-source_file = '/home/slisakov/Documents/sites/tree/source.data'
-output_file = '/home/slisakov/Documents/sites/tree/py_generated.json'
-### what is your tabstop value?
+source_file = '/home/slisakov/Documents/sites/gittree/source.data'
+output_file = '/home/slisakov/Documents/sites/gittree/py_generated.json'
+### what is your tabstop value (number of spaces)?
 tabstop = 4
 
 ### declare list with names
@@ -136,4 +136,3 @@ print('vsevolod = ', vsevolod)
 print('bryachislav = ', bryachislav)
 print('yaroslav = ', yaroslav)
 print('rurik = ', rurik)
-
