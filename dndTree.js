@@ -359,19 +359,6 @@ treeJSON = d3.json("py_generated.json", function(error, treeData) {
         zoomListener.translate([x, y]);
     }
 
-    // Toggle children function
-
-    function toggleChildren(d) {
-        if (d.children) {
-            d._children = d.children;
-            d.children = null;
-        } else if (d._children) {
-            d.children = d._children;
-            d._children = null;
-        }
-        return d;
-    }
-
     // Toggle children on click.
 
     function click(d) {
