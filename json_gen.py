@@ -4,9 +4,11 @@
 import json, re
 
 
+# Destination object
 tree = {}
+
+# List of references to all subtrees that contains current guy
 subtrees = [None]*100
-previous_tabs = 0
 
 # Read source file
 with open("source.data") as fh:
@@ -18,8 +20,13 @@ with open("source.data") as fh:
         # Count number of tabs
         m = re.match(r'^(\s*)(.+)', line)
         tabs = len(m.group(1)) // 4
-        name = m.group(2)
 
+        # Get name from line:
+        name = m.group(0)
+        if name == 'invisible':
+            name = ''
+
+        # Person info
         guy = {
             'name' : name,
         }
@@ -30,11 +37,15 @@ with open("source.data") as fh:
             subtrees[0] = tree
             continue
 
+        # Add guy to parent's subtree        
         if 'children' in subtrees[tabs-1]:
             subtrees[tabs-1]['children'].append(guy)
         else:
             subtrees[tabs-1]['children'] = [guy]
+
+        # Set current guy as subtree
         subtrees[tabs] = subtrees[tabs-1]['children'][-1]
 
+# Serialize tree object as JSON
 with open('tree.json', 'w') as fh:
-    fh.write( json.dumps(tree, sort_keys=True, ensure_ascii=False) )
+    fh.write( json.dumps(tree, sort_keys=False, ensure_ascii=False) )
