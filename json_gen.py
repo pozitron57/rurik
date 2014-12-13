@@ -11,8 +11,8 @@ tree = {}
 subtrees = [None]*100
 
 # Read source file
-with open("source.data") as fh:
-    for line in fh:
+with open("source.data") as fp:
+    for line in fp:
         # Skip empty and commented lines
         if len(line) <= 1 or line[0] == "#":
             continue
@@ -47,10 +47,11 @@ with open("source.data") as fh:
         subtrees[tabs] = subtrees[tabs-1]['children'][-1]
 
 # Serialize tree object as JSON
-with open('tree.json', 'w') as fh:
-    fh.write( json.dumps(
+with open('tree.json', 'w') as fp:
+    json.dump(
         tree,
+        fp,
         sort_keys = False, 
-        indent = "",
+        indent = None,
         ensure_ascii = False
-    ) )
+    )
