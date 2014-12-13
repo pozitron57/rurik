@@ -22,7 +22,7 @@ with open("source.data") as fh:
         tabs = len(m.group(1)) // 4
 
         # Get name from line:
-        name = m.group(0)
+        name = m.group(2)
         if name == 'invisible':
             name = ''
 
@@ -48,4 +48,9 @@ with open("source.data") as fh:
 
 # Serialize tree object as JSON
 with open('tree.json', 'w') as fh:
-    fh.write( json.dumps(tree, sort_keys=False, ensure_ascii=False) )
+    fh.write( json.dumps(
+        tree,
+        sort_keys = False, 
+        indent = "",
+        ensure_ascii = False
+    ) )
