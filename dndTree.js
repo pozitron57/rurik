@@ -364,8 +364,6 @@ treeJSON = d3.json("py_generated.json", function(error, treeData) {
         zoomListener.translate([x, y]);
     }
 
-<<<<<<< HEAD
-=======
 //    // Toggle children function
 //lisakov probably may be deleted due to new following function
 //    function toggleChildren(d) {
@@ -378,8 +376,6 @@ treeJSON = d3.json("py_generated.json", function(error, treeData) {
 //        }
 //        return d;
 //    }
-
->>>>>>> 817da91b040bdee3a0a4b65c3c5f3d77e21e6a23
     // Toggle children on click.
     //hombit-driven awesome function to expand choosen amount of generations
     function click(d) {
@@ -605,5 +601,4 @@ treeJSON = d3.json("py_generated.json", function(error, treeData) {
     root.children.forEach(collapse);
     update(root);
     liscenterNode(root);
-
 });
