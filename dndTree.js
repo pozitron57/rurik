@@ -16,6 +16,7 @@ treeJSON = d3.json("py_generated.json", function(error, treeData) {
     var root;
     var numberOfGenerations = 2;
     var maxNuberOfGenerations = 20;
+    var numberOfGenerationsOnStartup = 3;
 
     var buttonShowEveryone = d3.select("#pokaz-vseh").append("button")
     // this text means "Show everebody"
@@ -380,6 +381,10 @@ treeJSON = d3.json("py_generated.json", function(error, treeData) {
     //hombit-driven awesome function to expand choosen amount of generations
     function click(d) {
         if (d3.event.defaultPrevented) return; // click suppressed
+	click_handler(d);
+    }
+
+    function click_handler(d) {
         if (d._children) {
             var nodes = [d];
             for (var i = 0; i < numberOfGenerations; i++ ) {
@@ -409,7 +414,8 @@ treeJSON = d3.json("py_generated.json", function(error, treeData) {
             d.children = null;
         }
         update(d);
-        centerNode(d);  //may be liscenterNode looks more sexy here?
+        liscenterNode(d);
+	return nodes;
     }
 
     function update(source) {
@@ -601,4 +607,13 @@ treeJSON = d3.json("py_generated.json", function(error, treeData) {
     root.children.forEach(collapse);
     update(root);
     liscenterNode(root);
+
+    root.children.forEach( function(d) {
+        if ( d._children ){
+             var numberOfGenerationsOrig = numberOfGenerations;
+             numberOfGenerations = numberOfGenerationsOnStartup;
+	     click_handler(d);
+             numberOfGenerations = numberOfGenerationsOrig;
+        }
+    } );
 });
