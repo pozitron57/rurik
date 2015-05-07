@@ -1,5 +1,5 @@
 // Get JSON data
-treeJSON = d3.json("py_generated.json", function(error, treeData) {
+treeJSON = d3.json("tree.json", function(error, treeData) {
 
     // Calculate total nodes, max label length
     var totalNodes = 0;
@@ -16,7 +16,7 @@ treeJSON = d3.json("py_generated.json", function(error, treeData) {
     var root;
     var numberOfGenerations = 2;
     var maxNuberOfGenerations = 20;
-    var numberOfGenerationsOnStartup = 3;
+    var numberOfGenerationsOnStartup = 5;
 
     var buttonShowEveryone = d3.select("#pokaz-vseh").append("button")
     // this text means "Show everebody"
@@ -468,9 +468,20 @@ treeJSON = d3.json("py_generated.json", function(error, treeData) {
 
 //lisakov modified for getting colors from json
         nodeEnter.append("circle")
-            .attr("r", function(d) { return d.radius; })
-            .style("stroke", function(d) { return d.granica; })
-            .style("fill", function(d) { return d.zapolnenie; });
+            //.attr("r", function(d) { return d.radius; })
+            //.style("stroke", function(d) { return d.granica; })
+            //.style("fill", function(d) { return d.zapolnenie; });
+
+		nodeEnter.append("title")
+			.text( function(d) {
+				if ( d.birth == "" ){
+					d.birth = "?"
+				}
+				if ( d.death == "" ){
+					d.death = "?"
+				}
+				return d.birth + " — " + d.death;
+			} )
 
         nodeEnter.append("text")
             //.attr("x", function(d) {     //lisakov probably it is an odd function. This -10 and 10 doesn't do anything
@@ -497,6 +508,7 @@ treeJSON = d3.json("py_generated.json", function(error, treeData) {
     // lisakov trying to get color from json
         node.select("circle")
             .attr("r", function(d) { return d.radius; })
+            //.attr("stroke-width", 6)
             .style("stroke", function(d) { return d.granica; })
             .style("fill", function(d) {
                 return d._children ? "#FFC576" : "white";});
@@ -538,7 +550,8 @@ treeJSON = d3.json("py_generated.json", function(error, treeData) {
 
         link.enter().insert("path", "g")
             .attr("class", "link")
-            .style("stroke", function(d) { return d.target.liniya; })
+            .style("stroke", function(d) { return d.target.line_color; })
+            .style("stroke-width", function(d) { return d.target.line_width; })
             .attr("d", function(d) {
                 var o = {
                     x: source.x0,
@@ -589,12 +602,12 @@ treeJSON = d3.json("py_generated.json", function(error, treeData) {
     //update(root);
     //centerNode(root);
 
-    // lisakov zoom onpageload
+    // lisakov positioning node after click
     function liscenterNode(source) {
         scale = zoomListener.scale();
         x = -source.y0;
         y = -source.x0;
-        x = x * scale + viewerWidth / 3.13; // lisakov put first node to left part of screen, not to the center (divide by 25 or smth like this if everything is expanded, or set 3.13 and 2.5 for rurik to be in center with invisible root and Veshiy Oleg).
+        x = x * scale + viewerWidth / 2.77; // lisakov put first node to left part of screen, not to the center (divide by 25 or smth like this if everything is expanded, or set 3.13 and 2.5 for rurik to be in center with invisible root and Veshiy Oleg).
         y = y * scale + viewerHeight / 2.500;
         d3.select('g').transition()
             .duration(duration)
@@ -603,10 +616,9 @@ treeJSON = d3.json("py_generated.json", function(error, treeData) {
         zoomListener.translate([x, y]);
     }
 
-
     root.children.forEach(collapse);
+    //liscenterNode(root);
     update(root);
-    liscenterNode(root);
 
     root.children.forEach( function(d) {
         if ( d._children ){

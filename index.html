@@ -1,67 +1,71 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-		<meta name="keywords" content="Родословная, Рюриковичи, генеалогия, князь, Русь">
-		<meta name="description" content="Генеалогическое древо (родословная) для русских князей. Рюриковичи. Все ветви до колена Ивана Грозного.">
-        <link rel="stylesheet" href="treestyle.css" type="text/css">
-        <link rel="icon" href="favicon.ico" type="image/x-icon">
-        <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
-        <title>Родословная князей русских</title>
-        <script src="jquery-1.10.2.min.js"></script>
-        <script src="d3.js" charset="utf-8"></script>
-        <script src="dndTree.js"></script>
-     </head>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <!-- <meta name="keywords" content="Родословная, Рюриковичи, генеалогия, князь, Русь"> -->
+  <meta name="description" content="Генеалогическое древо (родословная) Рюриковичей. Все ветви до колена Ивана Грозного.">
+  <link rel="stylesheet" href="treestyle.css" type="text/css">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+  <title>Рюриковичи. Полная родословная.</title>
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script src="d3.js" charset="utf-8"></script>
+  <script src="dndTree.js"></script>
+</head>
 
 <body>
 
-    <div id="tree-container">
-      <!--  <div id="skolzec"> 
-            <p onmouseout="throwAway(this)" style="position: fixed; left: 43%; color: white; background: steelblue; padding: 13px 10px 7px 10px; font-size: 11pt;"> Что делать-то?</p> -->
+<div id="tree-container">
+  <!--  <div id="skolzec"> 
+  <p onmouseout="throwAway(this)" style="position: fixed; left: 43%; color: white; background: steelblue; padding: 13px 10px 7px 10px; font-size: 11pt;"> Что делать-то?</p> -->
 
-            <div id="skolzec_inner">
-                <div id="masshtabiruyte"> Масштабируйте колёсиком; перемещайтесь, перетаскивая фон. Щёлкните на Рюрика.
-                </div>
+  <div id="skolzec_inner">
 
-                <div id="ostranice" title="Перейти на страницу информации об авторах, идеях и планах дальнейшей разработки. Откроется в новой вкладке."><button onclick="window.open('http://lisakov.com/blog/pedigree')">О&nbsp;странице</button>
-                </div>
+    <div id="masshtabiruyte" title="Чтобы раскрыть новую ветвь, щёлкните на закрашенный кружок. Чтобы перемещаться, нажмите левой кнопкой мыши на пустое место и, удерживая кнопу нажатой, переместите курсор мыши. Пустой кружок означает, что потомков нет или они уже показаны."> Масштабируйте колёсиком; перемещайтесь, перетаскивая фон. Щёлкните на Рюрика.
+    </div>
 
-                <div id="pokaz-vseh" title="Не стоит нажимать эту кнопку! Здесь почти тысяча человек...">
-                </div>
+    <div id="ostranice" title="Перейти на страницу информации об авторах, идеях и планах дальнейшей разработки. Откроется в новой вкладке."><button onclick="window.open('http://lisakov.com/blog/2014/11/25/rurik-pedigree/')">О&nbsp;странице</button>
+    </div>
 
-                <div id="skrit-vseh">
-                </div>
+    <div id="pokaz-vseh" title="Используйте эту кнопку с осторожностью: на схеме представлено почти 750 человек.">
+    </div>
 
-                <div id="vipad-spisok" title="Выбрать, сколько поколений показывать по первому щелчку на князя. Если, например, после Рюрика уже было раскрыто 5 поколений и затем скрыто щелчком по Рюрику, то по следующему щелчку на Рюрика восстановится предыдущий вид — этот параметр будет проигнорирован.">
-                </div>
+    <div id="skrit-vseh">
+    </div>
 
-                <div id="raskrivat" title="Выбрать, сколько поколений показывать по первому щелчку на князя. Если, например, после Рюрика уже было раскрыто 5 поколений и затем скрыто щелчком по Рюрику, то по следующему щелчку на Рюрика восстановится предыдущий вид — этот параметр будет проигнорирован." >
-                </div>
+    <div id="vipad-spisok" title="Выбрать, сколько поколений показывать по первому щелчку на князя. Если, например, после Рюрика уже было раскрыто 5 поколений и затем скрыто щелчком по Рюрику, то любое меньшее 5 число будет проигнорировано и восстановится предыдущий вид. Чтобы оно заработало, надо нажать кнопку «Спрятать всех» в раскрытом состоянии.">
+    </div>
 
-            </div>
-        </div>
-    <!-- </div> -->
+    <div id="raskrivat" title="Выбрать, сколько поколений показывать по первому щелчку на князя. Если, например, после Рюрика уже было раскрыто 5 поколений и затем скрыто щелчком по Рюрику, то любое меньшее 5 число будет проигнорировано и восстановится предыдущий вид. Чтобы оно заработало, надо нажать кнопку «Спрятать всех» в раскрытом состоянии." >
+    </div>
 
-    <script>
-    function throwAway(x) {
-        x.style.top = "-200px";
-        }
-    </script>
-
-    <!-- <div style="position: absolute; top: -3px; font-size: 9.5pt; width: 45%; background: white;">Масштабируйте колёсиком; перемещайтесь, перетаскивая фон. <br> Щёлкните на Рюрика.</div>  
-    <div style="position: absolute; font-size: 9pt;left: 45%; width: 10%; background: white;"><a href="http://lisakov.com/blog/pedigree/" target ="_blank">О&nbsp;странице</a> </div>
-    <div style="position: absolute; right: 0; width: 45%;" id="knopki-iz-d3"></div> -->
+  </div>
+</div>
+<!-- </div>
 
 <script>
-    var _gaq = _gaq || [];
+function throwAway(x) {
+x.style.top = "-200px";
+}
+</script>
+
+<div style="position: absolute; top: -3px; font-size: 9.5pt; width: 45%; background: white;">Масштабируйте колёсиком; перемещайтесь, перетаскивая фон. <br> Щёлкните на Рюрика.</div>  
+<div style="position: absolute; font-size: 9pt;left: 45%; width: 10%; background: white;"><a href="http://lisakov.com/blog/pedigree/" target ="_blank">О&nbsp;странице</a> </div>
+<div style="position: absolute; right: 0; width: 45%;" id="knopki-iz-d3"></div> -->
+
+<script>
+  var _gaq = _gaq || [];
   _gaq.push(['_setAccount', 'UA-56269876-1']);
   _gaq.push(['_trackPageview']);
   (function() {
-    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-    ga.src = ('https:' == document.location.protocol ? 'https://' : 'http://') + 'stats.g.doubleclick.net/dc.js';
-    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+  ga.src = ('https:' == document.location.protocol ? 'https://' : 'http://') + 'stats.g.doubleclick.net/dc.js';
+  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
   })();
 </script> 
+
+<!-- Yandex.Metrika counter --><script type="text/javascript">(function (d, w, c) { (w[c] = w[c] || []).push(function() { try { w.yaCounter28353306 = new Ya.Metrika({id:28353306, clickmap:true, trackLinks:true, accurateTrackBounce:true}); } catch(e) { } }); var n = d.getElementsByTagName("script")[0], s = d.createElement("script"), f = function () { n.parentNode.insertBefore(s, n); }; s.type = "text/javascript"; s.async = true; s.src = (d.location.protocol == "https:" ? "https:" : "http:") + "//mc.yandex.ru/metrika/watch.js"; if (w.opera == "[object Opera]") { d.addEventListener("DOMContentLoaded", f, false); } else { f(); } })(document, window, "yandex_metrika_callbacks");</script><noscript><div><img src="//mc.yandex.ru/watch/28353306" style="position:absolute; left:-9999px;" alt="" /></div></noscript><!-- /Yandex.Metrika counter -->
+
 </body>
 </html>
