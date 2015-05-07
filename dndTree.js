@@ -480,7 +480,7 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
 				if ( d.death == "" ){
 					d.death = "?"
 				}
-				return d.birth + " — " + d.death;
+				return "Годы жизни: " + d.birth + " – " + d.death;
 			} )
 
         nodeEnter.append("text")
