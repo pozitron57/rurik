@@ -472,6 +472,17 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
             //.style("stroke", function(d) { return d.granica; })
             //.style("fill", function(d) { return d.zapolnenie; });
 
+		nodeEnter.append("title")
+			.text( function(d) {
+				if ( d.birth == "" ){
+					d.birth = "?"
+				}
+				if ( d.death == "" ){
+					d.death = "?"
+				}
+				return d.birth + " — " + d.death;
+			} )
+
         nodeEnter.append("text")
             //.attr("x", function(d) {     //lisakov probably it is an odd function. This -10 and 10 doesn't do anything
                 //return d.children || d._children ?
