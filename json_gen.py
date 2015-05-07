@@ -29,8 +29,8 @@ with open("source.data") as fp:
         line_color      = '|'.join(groups[2:3]).strip() 
         radius          = '|'.join(groups[3:4]).strip()
         granica         = '|'.join(groups[4:5]).strip()
-#        birth           = '|'.join(groups[5:6]).strip()
-#        death           = '|'.join(groups[6:7]).strip()
+        birth           = '|'.join(groups[5:6]).strip()
+        death           = '|'.join(groups[6:7]).strip()
 
 
         # set invisible parameters
@@ -45,6 +45,8 @@ with open("source.data") as fp:
             'line_color' : line_color,
             'line_width' : line_width,
             'granica' : granica,
+            'birth' : birth,
+            'death' : death
         }
 
         # Tree root
