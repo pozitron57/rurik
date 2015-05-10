@@ -194,6 +194,16 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
         .attr("class", "overlay")
         .call(zoomListener);
 
+
+	// Popup message
+	var tip = d3.tip()
+		.attr('class', 'd3-tip')
+		.offset([40, 0])
+		.html(function(d) {
+			return "<div class='tip'>Годы жизни: " + d.birth + " &ndash; " + d.death + "</div>";
+		})
+	baseSvg.call(tip);
+
     // Define the drag listeners for drag/drop behaviour of nodes.
     dragListener = d3.behavior.drag()
         .on("dragstart", function(d) {
@@ -381,7 +391,7 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
     //hombit-driven awesome function to expand choosen amount of generations
     function click(d) {
         if (d3.event.defaultPrevented) return; // click suppressed
-	click_handler(d);
+		click_handler(d);
     }
 
     function click_handler(d) {
@@ -455,7 +465,7 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
             .data(nodes, function(d) {
                 return d.id || (d.id = ++i);
             });
-
+		
 
         // Enter any new nodes at the parent's previous position.
         var nodeEnter = node.enter().append("g")
@@ -464,6 +474,8 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
             .attr("transform", function(d) {
                 return "translate(" + source.y0 + "," + source.x0 + ")";
             })
+			.on('mouseover', tip.show)
+			.on('mouseout', tip.hide)
             .on('click', click);
 
 //lisakov modified for getting colors from json
@@ -472,16 +484,16 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
             //.style("stroke", function(d) { return d.granica; })
             //.style("fill", function(d) { return d.zapolnenie; });
 
-		nodeEnter.append("title")
-			.text( function(d) {
-				if ( d.birth == "" ){
-					d.birth = "?"
-				}
-				if ( d.death == "" ){
-					d.death = "?"
-				}
-				return d.birth + " — " + d.death;
-			} )
+//		nodeEnter.append("title")
+//			.text( function(d) {
+//				if ( d.birth == "" ){
+//					d.birth = "?"
+//				}
+//				if ( d.death == "" ){
+//					d.death = "?"
+//				}
+//				return "Годы жизни: " + d.birth + " – " + d.death;
+//			} )
 
         nodeEnter.append("text")
             //.attr("x", function(d) {     //lisakov probably it is an odd function. This -10 and 10 doesn't do anything
