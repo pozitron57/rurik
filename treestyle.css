@@ -111,6 +111,10 @@
     font-family:sans-serif;
   }
    
+  .tip {
+	background:white;
+  }
+
   .link {
     fill: none;
     stroke: #ccc;
