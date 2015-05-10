@@ -200,7 +200,7 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
 		.attr('class', 'd3-tip')
 		.offset([40, 0])
 		.html(function(d) {
-			return "<div class='tip'>Годы жизни: " + d.birth + " &mdash; " + d.death + "</div>";
+			return "<div class='tip'>Годы жизни: " + d.birth + " &ndash; " + d.death + "</div>";
 		})
 	baseSvg.call(tip);
 
@@ -474,12 +474,12 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
             .attr("transform", function(d) {
                 return "translate(" + source.y0 + "," + source.x0 + ")";
             })
+			.on('mouseover', tip.show)
+			.on('mouseout', tip.hide)
             .on('click', click);
 
 //lisakov modified for getting colors from json
         nodeEnter.append("circle")
-			.on('mouseover', tip.show)
-			.on('mouseout', tip.hide);
             //.attr("r", function(d) { return d.radius; })
             //.style("stroke", function(d) { return d.granica; })
             //.style("fill", function(d) { return d.zapolnenie; });
