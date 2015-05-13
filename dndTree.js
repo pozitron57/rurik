@@ -1,5 +1,4 @@
 // Get JSON data
-//lisakov test
 treeJSON = d3.json("tree.json", function(error, treeData) {
 
     // Calculate total nodes, max label length
