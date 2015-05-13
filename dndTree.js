@@ -358,8 +358,19 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
             .attr("transform", function(d) {
                 return "translate(" + source.y0 + "," + source.x0 + ")";
             })
-            .on('mouseover', tip.show)
-            .on('mouseout', tip.hide)
+            .on('mouseover', function(d) {
+              var context = this;
+              var args = [].slice.call(arguments);
+              args.push(this);
+              clearTimeout(timeout);
+              timeout = setTimeout(function() {
+                tip.show.apply(context, args);
+              }, 1000);
+            })
+            //.on('mouseout', tip.hide)
+             .on('mouseout', function(d){
+               setTimeout( tip.hide, 1100 );
+            })
             .on('click', click);
 
 
