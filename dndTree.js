@@ -16,9 +16,9 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
     var root;
     var numberOfGenerations = 2;
     var maxNuberOfGenerations = 20;
-    var numberOfGenerationsOnStartup = 5;
+    var numberOfGenerationsOnStartup = 4;
 
-    var buttonShowEveryone = d3.select("#pokaz-vseh").append("button")
+    var buttonShowEveryone = d3.select("#show-all").append("button")
     // this text means "Show everebody"
         .text("Показать всех")
         .on('click', function (data, index) {
@@ -26,7 +26,7 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
             update(root);
         });
 
-    var buttonHideEveryone = d3.select("#skrit-vseh").append("button")
+    var buttonHideEveryone = d3.select("#hide-all").append("button")
     // this text means "Hide everebody"
         .text("Спрятать всех")
         .on('click', function (data, index) {
@@ -39,7 +39,7 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
         numberOfGenerations = $("select").val();
     });
 
-    var formNumberOfGenerations = d3.select("#vipad-spisok").append("select");
+    var formNumberOfGenerations = d3.select("#dropdown-list").append("select");
     for (var i = 1; i <= maxNuberOfGenerations; i++) {
         var option = formNumberOfGenerations.append("option")
             .attr("value", i)
@@ -51,7 +51,7 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
     $("select").change(function () {
         numberOfGenerations = $("select").val();
     });
-    var textNumberOfGenerations = d3.select("#raskrivat").append("text")
+    var textNumberOfGenerations = d3.select("#open-gen-text").append("text")
     // this text means "Choose how much gererations to be expanded on click"
         .text("Раскрывать поколений по щелчку:");
 
@@ -94,41 +94,6 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
     });
 
 
-    // sort the tree according to the node names. Do not sort family tree!
-
-//    function sortTree() {
-//        tree.sort(function(a, b) {
-//            return b.name.toLowerCase() < a.name.toLowerCase() ? 1 : -1;
-//        });
-//    }
-    // Sort the tree initially incase the JSON isn't in a sorted order.
-    //sortTree();
-
- // TODO: Pan function, can be better implemented. //lisakov commented, do not need
- //   function pan(domNode, direction) {
- //       var speed = panSpeed;
- //       if (panTimer) {
- //           clearTimeout(panTimer);
- //           translateCoords = d3.transform(svgGroup.attr("transform"));
- //           if (direction == 'left' || direction == 'right') {
- //               translateX = direction == 'left' ? translateCoords.translate[0] + speed : translateCoords.translate[0] - speed;
- //               translateY = translateCoords.translate[1];
- //           } else if (direction == 'up' || direction == 'down') {
- //               translateX = translateCoords.translate[0];
- //               translateY = direction == 'up' ? translateCoords.translate[1] + speed : translateCoords.translate[1] - speed;
- //           }
- //           scaleX = translateCoords.scale[0];
- //           scaleY = translateCoords.scale[1];
- //           scale = zoomListener.scale();
- //           svgGroup.transition().attr("transform", "translate(" + translateX + "," + translateY + ")scale(" + scale + ")");
- //           d3.select(domNode).select('g.node').attr("transform", "translate(" + translateX + "," + translateY + ")");
- //           zoomListener.scale(zoomListener.scale());
- //           zoomListener.translate([translateX, translateY]);
- //           panTimer = setTimeout(function() {
- //               pan(domNode, speed, direction);
- //           }, 50);
- //       }
- //   }
 
     // Define the zoom function for the zoomable tree
 
@@ -143,50 +108,6 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
         .on("zoom", zoom);
 
 
-//// lisakov stop nodes dragging, stop anarchy! It's a family tree after all.
-//   // function initiateDrag(d, domNode) {
-//        draggingNode = d;
-//        d3.select(domNode).select('.ghostCircle').attr('pointer-events', 'none');
-//        d3.selectAll('.ghostCircle').attr('class', 'ghostCircle show');
-//        d3.select(domNode).attr('class', 'node activeDrag');
-//
-//        svgGroup.selectAll("g.node").sort(function(a, b) { // select the parent and sort the path's
-//            if (a.id != draggingNode.id) return 1; // a is not the hovered element, send "a" to the back
-//            else return -1; // a is the hovered element, bring "a" to the front
-//        });
-//        // if nodes has children, remove the links and nodes
-//        if (nodes.length > 1) {
-//            // remove link paths
-//            links = tree.links(nodes);
-//            nodePaths = svgGroup.selectAll("path.link")
-//                .data(links, function(d) {
-//                    return d.target.id;
-//                }).remove();
-//            // remove child nodes
-//            nodesExit = svgGroup.selectAll("g.node")
-//                .data(nodes, function(d) {
-//                    return d.id;
-//                }).filter(function(d, i) {
-//                    if (d.id == draggingNode.id) {
-//                        return false;
-//                    }
-//                    return true;
-//                }).remove();
-//        }
-//
-//        // remove parent link
-//        parentLink = tree.links(tree.nodes(draggingNode.parent));
-//        svgGroup.selectAll('path.link').filter(function(d, i) {
-//            if (d.target.id == draggingNode.id) {
-//                return true;
-//            }
-//            return false;
-//        }).remove();
-//
-//        dragStarted = null;
-//    }
-//
-
     // define the baseSvg, attaching a class for styling and the zoomListener
     var baseSvg = d3.select("#tree-container").append("svg")
         .attr("width", viewerWidth)
@@ -198,9 +119,10 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
 	// Popup message
 	var tip = d3.tip()
 		.attr('class', 'd3-tip')
-		.offset([40, 0])
+		.offset([50, 0])
 		.html(function(d) {
-			return "<div class='tip'>Годы жизни: " + d.birth + " &ndash; " + d.death + "</div>";
+			//return "<div class='tip'>Годы жизни: " + d.birth + " &ndash; " + d.death + "</div>";
+			return "Годы жизни: " + d.birth + " &ndash; " + d.death;
 		})
 	baseSvg.call(tip);
 
@@ -223,30 +145,6 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
                 domNode = this;
                 initiateDrag(d, domNode);
             }
-
-//            // get coords of mouseEvent relative to svg container to allow for panning
-//lisakov commented this 07 december
-//            relCoords = d3.mouse($('svg').get(0));
-//            if (relCoords[0] < panBoundary) {
-//                panTimer = true;
-//                pan(this, 'left');
-//            } else if (relCoords[0] > ($('svg').width() - panBoundary)) {
-//
-//                panTimer = true;
-//                pan(this, 'right');
-//            } else if (relCoords[1] < panBoundary) {
-//                panTimer = true;
-//                pan(this, 'up');
-//            } else if (relCoords[1] > ($('svg').height() - panBoundary)) {
-//                panTimer = true;
-//                pan(this, 'down');
-//            } else {
-//                try {
-//                    clearTimeout(panTimer);
-//                } catch (e) {
-//
-//                }
-//            }
 
             d.x0 += d3.event.dy;
             d.y0 += d3.event.dx;
@@ -282,21 +180,6 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
                 endDrag();
             }
         });
-
-//lisakov commented this 07 december
-//    function endDrag() {
-//        selectedNode = null;
-//        d3.selectAll('.ghostCircle').attr('class', 'ghostCircle');
-//        d3.select(domNode).attr('class', 'node');
-//        // now restore the mouseover event or we won't be able to drag a 2nd time
-//        d3.select(domNode).select('.ghostCircle').attr('pointer-events', '');
-//        updateTempConnector();
-//        if (draggingNode !== null) {
-//            update(root);
-//            centerNode(draggingNode);
-//            draggingNode = null;
-//        }
-//    }
 
     // Helper functions for collapsing and expanding nodes.
 
@@ -468,41 +351,25 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
 		
 
         // Enter any new nodes at the parent's previous position.
+
         var nodeEnter = node.enter().append("g")
             .call(dragListener)
             .attr("class", "node")
             .attr("transform", function(d) {
                 return "translate(" + source.y0 + "," + source.x0 + ")";
             })
+            .attr('width', 1000)
 			.on('mouseover', tip.show)
+
 			.on('mouseout', tip.hide)
             .on('click', click);
 
+
 //lisakov modified for getting colors from json
         nodeEnter.append("circle")
-            //.attr("r", function(d) { return d.radius; })
-            //.style("stroke", function(d) { return d.granica; })
-            //.style("fill", function(d) { return d.zapolnenie; });
-
-//		nodeEnter.append("title")
-//			.text( function(d) {
-//				if ( d.birth == "" ){
-//					d.birth = "?"
-//				}
-//				if ( d.death == "" ){
-//					d.death = "?"
-//				}
-//				return "Годы жизни: " + d.birth + " – " + d.death;
-//			} )
 
         nodeEnter.append("text")
-            //.attr("x", function(d) {     //lisakov probably it is an odd function. This -10 and 10 doesn't do anything
-                //return d.children || d._children ?
-                //(d.radius + 4) * -1 : d.radius + 4 })  //lisakov this line for name placement regarding his circle's radius
-                //return d.children || d._children ? -10 : 10; })  //lisakov probably it is odd line
             .attr("dy", "-.05em")
-            //.attr('class', 'nodeText')
-            //.style("stroke", function(d) { return d.granica; })
             .style("fill", function(d) { return d.text_color; })
             .attr("text-anchor", function(d) {
                 return d.children || d._children ? "end" : "start";
@@ -520,11 +387,10 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
     // lisakov trying to get color from json
         node.select("circle")
             .attr("r", function(d) { return d.radius; })
-            //.attr("stroke-width", 6)
+            //.attr("stroke-width", 2) // lisakov: where is the better place to do it — here or in the css file?
             .style("stroke", function(d) { return d.granica; })
             .style("fill", function(d) {
                 return d._children ? "#FFC576" : "white";});
-                //lisakov wondering how to use variables instead...
 
         // Transition nodes to their new position.
         var nodeUpdate = node.transition()
