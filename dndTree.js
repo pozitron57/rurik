@@ -1,4 +1,5 @@
 // Get JSON data
+//lisakov test
 treeJSON = d3.json("tree.json", function(error, treeData) {
 
     // Calculate total nodes, max label length
@@ -116,15 +117,15 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
         .call(zoomListener);
 
 
-	// Popup message
-	var tip = d3.tip()
-		.attr('class', 'd3-tip')
-		.offset([50, 0])
-		.html(function(d) {
-			//return "<div class='tip'>Годы жизни: " + d.birth + " &ndash; " + d.death + "</div>";
-			return "Годы жизни: " + d.birth + " &ndash; " + d.death;
-		})
-	baseSvg.call(tip);
+    // Popup message
+    var tip = d3.tip()
+        .attr('class', 'd3-tip')
+        .offset([50, 0])
+        .html(function(d) {
+            //return "<div class='tip'>Годы жизни: " + d.birth + " &ndash; " + d.death + "</div>";
+            return "Годы жизни: " + d.birth + " &ndash; " + d.death;
+        })
+    baseSvg.call(tip);
 
     // Define the drag listeners for drag/drop behaviour of nodes.
     dragListener = d3.behavior.drag()
@@ -274,7 +275,7 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
     //hombit-driven awesome function to expand choosen amount of generations
     function click(d) {
         if (d3.event.defaultPrevented) return; // click suppressed
-		click_handler(d);
+        click_handler(d);
     }
 
     function click_handler(d) {
@@ -308,7 +309,7 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
         }
         update(d);
         liscenterNode(d);
-	return nodes;
+    return nodes;
     }
 
     function update(source) {
@@ -348,7 +349,7 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
             .data(nodes, function(d) {
                 return d.id || (d.id = ++i);
             });
-		
+        
 
         // Enter any new nodes at the parent's previous position.
 
@@ -358,8 +359,8 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
             .attr("transform", function(d) {
                 return "translate(" + source.y0 + "," + source.x0 + ")";
             })
-			.on('mouseover', tip.show)
-			.on('mouseout', tip.hide)
+            .on('mouseover', tip.show)
+            .on('mouseout', tip.hide)
             .on('click', click);
 
 
@@ -500,7 +501,7 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
         if ( d._children ){
              var numberOfGenerationsOrig = numberOfGenerations;
              numberOfGenerations = numberOfGenerationsOnStartup;
-	     click_handler(d);
+         click_handler(d);
              numberOfGenerations = numberOfGenerationsOrig;
         }
     } );
