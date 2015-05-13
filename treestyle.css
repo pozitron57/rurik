@@ -17,7 +17,7 @@ select { float: right; background: white; margin: 10px 15px 0 -5px; }
    
 .d3-tip {
   line-height: 1;
-  font-size: 12px;
+  font-size: 14px;
   padding: 8px;
   background: rgba(0, 0, 0, 0.8);
   color: #fff;
