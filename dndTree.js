@@ -358,9 +358,7 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
             .attr("transform", function(d) {
                 return "translate(" + source.y0 + "," + source.x0 + ")";
             })
-            .attr('width', 1000)
 			.on('mouseover', tip.show)
-
 			.on('mouseout', tip.hide)
             .on('click', click);
 
