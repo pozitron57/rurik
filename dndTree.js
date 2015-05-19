@@ -350,14 +350,16 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
                 if ( d.death == "" ){
                     d.death = "?"
                 }
-                return d.birth + " — " + d.death;
+                return "Годы жизни: " + d.birth + " – " + d.death;
             } )
 
         nodeEnter.append("text")
+
             //.attr("x", function(d) {     //lisakov probably it is an odd function. This -10 and 10 doesn't do anything
                 //return d.children || d._children ?
                 //(d.radius + 4) * -1 : d.radius + 4 })  //lisakov this line for name placement regarding his circle's radius
                 //return d.children || d._children ? -10 : 10; })  //lisakov probably it is odd line
+
             .attr("dy", "-.05em")
             //.attr('class', 'nodeText')
             //.style("stroke", function(d) { return d.granica; })

@@ -1,12 +1,5 @@
 #tree-container { position: fixed; }
-#about-page { position: absolute; right: 0; height: 100%; }
-#hide-all { position: absolute; right: 105px; height: 100%; }
-#show-all { position: absolute; right: 210px; height: 100%; }
-#dropdown-list { position: absolute; right: 315px; height: 100%; }
-select { float: right; background: white; margin: 10px 15px 0 -5px; }
-#open-gen-text { height: 100%; position: absolute; right: 380px; width: 170px; padding: 2px 5px 0px 5px; color: #eeffff; font-size: 12.5pt; font-family: Times; text-align: center; }
-#scale { position: absolute; color: #eeffff; font-size: 12.5pt; font-family: Times; width: 400px; padding: 2px 0px 0px 5px; }
-#slider_inner { position: fixed; min-height: 45px; background: -moz-linear-gradient(#575757, #A0A0A0); background: -webkit-gradient(linear, 0 0, 0 95%, from(#575757), to(#a0a0a0)); background: -o-linear-gradient(top,rgb(88,88,88),rgb(160,160,160)); width: 100%; left: 0px; top: 0px; }
+select { background: white;}
 
 .overlay{ background-color: #ffffff; }
    
@@ -16,24 +9,3 @@ select { float: right; background: white; margin: 10px 15px 0 -5px; }
 .node text:hover { fill: #bc5723;}
    
 .link { fill: none; stroke-width: 0.9px; }
-
-button {
-  height: 100%;
-  width: 105px; 
-  color: #eeffff;
-  font-family: Times;
-  font-size: 13pt;
-  background: -moz-linear-gradient(#575757, #A0A0A0);
-  background: -webkit-gradient(linear, 0 0, 0 95%, from(#575757), to(#a0a0a0));
-  background: -o-linear-gradient(top,rgb(88,88,88),rgb(160,160,160));
-  border: 0px solid;
-  border-left: 1px solid darkgray;
-  padding: 0px 2px;
-}
-
-button:hover{
-  text-shadow: 0 1px #000;
-  background: -moz-linear-gradient(#A0A0A0, #575757);
-  background: -webkit-gradient(linear, 0 0, 0 95%, from(#a0a0a0), to(#575757));
-  background: -o-linear-gradient(top,rgb(160,160,160),rgb(88,88,88));
-}
