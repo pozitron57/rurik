@@ -10,13 +10,6 @@
   <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
   <title>Рюриковичи. Полная родословная.</title>
 
-  <!-- Yandex.Metrika counter --><script type="text/javascript">(function (d, w, c) { (w[c] = w[c] || []).push(function() { try { w.yaCounter28353306 = new Ya.Metrika({id:28353306, clickmap:true, trackLinks:true, accurateTrackBounce:true}); } catch(e) { } }); var n = d.getElementsByTagName("script")[0], s = d.createElement("script"), f = function () { n.parentNode.insertBefore(s, n); }; s.type = "text/javascript"; s.async = true; s.src = (d.location.protocol == "https:" ? "https:" : "http:") + "//mc.yandex.ru/metrika/watch.js"; if (w.opera == "[object Opera]") { d.addEventListener("DOMContentLoaded", f, false); } else { f(); } })(document, window, "yandex_metrika_callbacks");</script><noscript><div><img src="//mc.yandex.ru/watch/28353306" style="position:absolute; left:-9999px;" alt="" /></div></noscript><!-- /Yandex.Metrika counter -->
-
-  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-  <script src="d3.js" charset="utf-8"></script>
-  <script src="dndTree.js"></script>
-  <script src="d3-tip.js"></script>
-
   <script>
     var _gaq = _gaq || [];
     _gaq.push(['_setAccount', 'UA-56269876-1']);
@@ -28,15 +21,20 @@
     })();
   </script> 
 
+  <!-- Yandex.Metrika counter --><script type="text/javascript">(function (d, w, c) { (w[c] = w[c] || []).push(function() { try { w.yaCounter28353306 = new Ya.Metrika({id:28353306, clickmap:true, trackLinks:true, accurateTrackBounce:true}); } catch(e) { } }); var n = d.getElementsByTagName("script")[0], s = d.createElement("script"), f = function () { n.parentNode.insertBefore(s, n); }; s.type = "text/javascript"; s.async = true; s.src = (d.location.protocol == "https:" ? "https:" : "http:") + "//mc.yandex.ru/metrika/watch.js"; if (w.opera == "[object Opera]") { d.addEventListener("DOMContentLoaded", f, false); } else { f(); } })(document, window, "yandex_metrika_callbacks");</script><noscript><div><img src="//mc.yandex.ru/watch/28353306" style="position:absolute; left:-9999px;" alt="" /></div></noscript><!-- /Yandex.Metrika counter -->
+
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script src="d3.js" charset="utf-8"></script>
+  <script src="dndTree.js"></script>
 </head>
 
 <body>
 
 <div id="tree-container">
 
-  <div id="slider-inner">
+  <div id="slider_inner">
 
-    <div id="scale" title="Чтобы раскрыть новую ветвь, щёлкните на закрашенный кружок. Чтобы перемещаться, нажмите левой кнопкой мыши на пустое место и, удерживая кнопку нажатой, переместите курсор мыши. Пустой кружок означает, что потомков нет или они уже показаны."> Масштабируйте колёсиком; перемещайтесь, перетаскивая фон. Щёлкните на Рюрика.
+    <div id="scale" title="Чтобы раскрыть новую ветвь, щёлкните на закрашенный кружок. Чтобы перемещаться, нажмите левой кнопкой мыши на пустое место и, удерживая кнопу нажатой, переместите курсор мыши. Пустой кружок означает, что потомков нет или они уже показаны."> Масштабируйте колёсиком; перемещайтесь, перетаскивая фон. Щёлкните на Рюрика.
     </div>
 
     <div id="about-page" title="Перейти на страницу информации об авторах, идеях и планах дальнейшей разработки. Откроется в новой вкладке."><button onclick="window.open('http://lisakov.com/blog/2014/11/25/rurik-pedigree/')">О&nbsp;странице</button>
@@ -51,7 +49,7 @@
     <div id="dropdown-list" title="Выбрать, сколько поколений показывать по первому щелчку на князя. Если, например, после Рюрика уже было раскрыто 5 поколений и затем скрыто щелчком по Рюрику, то любое меньшее 5 число будет проигнорировано и восстановится предыдущий вид. Чтобы оно заработало, надо нажать кнопку «Спрятать всех» в раскрытом состоянии.">
     </div>
 
-    <div id="open-gen-text" title="Выбрать, сколько поколений показывать по первому щелчку на князя. Если, например, после Рюрика уже было раскрыто 5 поколений и затем скрыто щелчком по Рюрику, то любое меньшее 5 число будет проигнорировано и восстановится предыдущий вид. Чтобы оно заработало, надо нажать кнопку «Спрятать всех» в раскрытом состоянии.">
+    <div id="open-gen-text" title="Выбрать, сколько поколений показывать по первому щелчку на князя. Если, например, после Рюрика уже было раскрыто 5 поколений и затем скрыто щелчком по Рюрику, то любое меньшее 5 число будет проигнорировано и восстановится предыдущий вид. Чтобы оно заработало, надо нажать кнопку «Спрятать всех» в раскрытом состоянии." >
     </div>
 
   </div>

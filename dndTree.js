@@ -16,7 +16,7 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
     var root;
     var numberOfGenerations = 2;
     var maxNuberOfGenerations = 20;
-    var numberOfGenerationsOnStartup = 4;
+    var numberOfGenerationsOnStartup = 5;
 
     var buttonShowEveryone = d3.select("#show-all").append("button")
     // this text means "Show everebody"
@@ -94,7 +94,6 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
     });
 
 
-
     // Define the zoom function for the zoomable tree
 
     function zoom() {
@@ -114,17 +113,6 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
         .attr("height", viewerHeight)
         .attr("class", "overlay")
         .call(zoomListener);
-
-
-    // Popup message
-    var tip = d3.tip()
-        .attr('class', 'd3-tip')
-        .offset([50, 0])
-        .html(function(d) {
-            //return "<div class='tip'>Годы жизни: " + d.birth + " &ndash; " + d.death + "</div>";
-            return "Годы жизни: " + d.birth + " &ndash; " + d.death;
-        })
-    baseSvg.call(tip);
 
     // Define the drag listeners for drag/drop behaviour of nodes.
     dragListener = d3.behavior.drag()
@@ -258,23 +246,12 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
         zoomListener.translate([x, y]);
     }
 
-//    // Toggle children function
-//lisakov probably may be deleted due to new following function
-//    function toggleChildren(d) {
-//        if (d.children) {
-//            d._children = d.children;
-//            d.children = null;
-//        } else if (d._children) {
-//            d.children = d._children;
-//            d._children = null;
-//        }
-//        return d;
-//    }
     // Toggle children on click.
     //hombit-driven awesome function to expand choosen amount of generations
+
     function click(d) {
         if (d3.event.defaultPrevented) return; // click suppressed
-        click_handler(d);
+    click_handler(d);
     }
 
     function click_handler(d) {
@@ -348,26 +325,42 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
             .data(nodes, function(d) {
                 return d.id || (d.id = ++i);
             });
-        
+
 
         // Enter any new nodes at the parent's previous position.
-
         var nodeEnter = node.enter().append("g")
             .call(dragListener)
             .attr("class", "node")
             .attr("transform", function(d) {
                 return "translate(" + source.y0 + "," + source.x0 + ")";
             })
-            .on('mouseover', tip.show)
-            .on('mouseout', tip.hide)
             .on('click', click);
-
 
 //lisakov modified for getting colors from json
         nodeEnter.append("circle")
+            //.attr("r", function(d) { return d.radius; })
+            //.style("stroke", function(d) { return d.granica; })
+            //.style("fill", function(d) { return d.zapolnenie; });
+
+        nodeEnter.append("title")
+            .text( function(d) {
+                if ( d.birth == "" ){
+                    d.birth = "?"
+                }
+                if ( d.death == "" ){
+                    d.death = "?"
+                }
+                return d.birth + " — " + d.death;
+            } )
 
         nodeEnter.append("text")
+            //.attr("x", function(d) {     //lisakov probably it is an odd function. This -10 and 10 doesn't do anything
+                //return d.children || d._children ?
+                //(d.radius + 4) * -1 : d.radius + 4 })  //lisakov this line for name placement regarding his circle's radius
+                //return d.children || d._children ? -10 : 10; })  //lisakov probably it is odd line
             .attr("dy", "-.05em")
+            //.attr('class', 'nodeText')
+            //.style("stroke", function(d) { return d.granica; })
             .style("fill", function(d) { return d.text_color; })
             .attr("text-anchor", function(d) {
                 return d.children || d._children ? "end" : "start";
@@ -385,10 +378,11 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
     // lisakov trying to get color from json
         node.select("circle")
             .attr("r", function(d) { return d.radius; })
-            //.attr("stroke-width", 2) // lisakov: where is the better place to do it — here or in the css file?
+            //.attr("stroke-width", 6)
             .style("stroke", function(d) { return d.granica; })
             .style("fill", function(d) {
                 return d._children ? "#FFC576" : "white";});
+                //lisakov wondering how to use variables instead...
 
         // Transition nodes to their new position.
         var nodeUpdate = node.transition()

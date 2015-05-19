@@ -6,7 +6,7 @@
 select { float: right; background: white; margin: 10px 15px 0 -5px; }
 #open-gen-text { height: 100%; position: absolute; right: 380px; width: 170px; padding: 2px 5px 0px 5px; color: #eeffff; font-size: 12.5pt; font-family: Times; text-align: center; }
 #scale { position: absolute; color: #eeffff; font-size: 12.5pt; font-family: Times; width: 400px; padding: 2px 0px 0px 5px; }
-#slider-inner { position: fixed; min-height: 45px; background: -moz-linear-gradient(#575757, #A0A0A0); background: -webkit-gradient(linear, 0 0, 0 95%, from(#575757), to(#a0a0a0)); background: -o-linear-gradient(top,rgb(88,88,88),rgb(160,160,160)); width: 100%; left: 0px; top: 0px; }
+#slider_inner { position: fixed; min-height: 45px; background: -moz-linear-gradient(#575757, #A0A0A0); background: -webkit-gradient(linear, 0 0, 0 95%, from(#575757), to(#a0a0a0)); background: -o-linear-gradient(top,rgb(88,88,88),rgb(160,160,160)); width: 100%; left: 0px; top: 0px; }
 
 .overlay{ background-color: #ffffff; }
    
@@ -15,28 +15,6 @@ select { float: right; background: white; margin: 10px 15px 0 -5px; }
 .node text { font-size:12px; font-family:sans-serif; }
 .node text:hover { fill: #bc5723;}
    
-.d3-tip {
-  line-height: 1;
-  font-size: 14px;
-  padding: 8px;
-  background: rgba(0, 0, 0, 0.8);
-  color: #fff;
-  border-radius: 3px;
-  }
-
-.d3-tip:before {
-  box-sizing: border-box;
-  display: inline;
-  font-size: 10px;
-  width: 100%;
-  line-height: 1;
-  color: rgba(0, 0, 0, 0.8);
-  content: "\25B4";
-  position: absolute;
-  text-align: center;
-  margin: -16px 0 0 0;
-}
-
 .link { fill: none; stroke-width: 0.9px; }
 
 button {
