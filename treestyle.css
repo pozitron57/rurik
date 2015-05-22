@@ -1,7 +1,8 @@
 #tree-container { position: fixed; }
+
 select { background: white;}
 
-.overlay{ background-color: #ffffff; }
+.overlay{ background-color: #fff; }
    
 .node { cursor: pointer; }
 .node circle { stroke-width: 1.9px; }
@@ -9,3 +10,11 @@ select { background: white;}
 .node text:hover { fill: #bc5723;}
    
 .link { fill: none; stroke-width: 0.9px; }
+
+.beta { color: darkorange !important; font-size: 20pt !important; line-height: 0.5em !important; margin-top: 2px;}
+.beta:hover {background: darkorange !important; color: white !important; border-radius: 4px; }
+
+@media screen and (max-width: 767px) {
+    .beta {margin-top: 0; }
+    }
+
