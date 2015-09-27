@@ -6,7 +6,7 @@ import json, re
 # Destination object
 tree = {}
 
-# List of references to all subtrees that contains current guy
+# List of references to all subtrees which contains current guy
 subtrees = [None]*100
 
 # Read source file
