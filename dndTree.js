@@ -237,7 +237,7 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
         scale = zoomListener.scale();
         x = -source.y0;
         y = -source.x0;
-        x = x * scale + viewerWidth / 2; // lisakov do not change horizontal position, annoying
+        x = x * scale + viewerWidth / 2; // lisakov do not change horizontal position
         y = y * scale + viewerHeight / 2;
         d3.select('g').transition()
             .duration(duration)
@@ -305,7 +305,7 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
             }
         };
         childCount(0, root);
-        var newHeight = d3.max(levelWidth) * 29; // lisakov set px per line.
+        var newHeight = d3.max(levelWidth) * 31; // lisakov set vertical distance px per line.
         tree = tree.size([newHeight, viewerWidth]);
 
         // Compute the new tree layout.
