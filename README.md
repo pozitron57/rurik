@@ -11,7 +11,7 @@ The file ```source.data``` contains the list of the dynasty members. One tab (4 
 ```json_gen.py``` reads ```source.data``` file and produce ```tree.json``` which is used by ```dndTree.js```.
 
 ### Implemented functions:
-- «Show everebody» and «hide everebody» buttons;
+- «Show all» and «hide all» buttons;
 - Choose how many generations are showed by the click (1–20);
 - Choose the number of displayed generations on the page load;
 - Popups with the info about a person on mouse hover (β-version, currently only birth and death date for 5 generations).
