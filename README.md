@@ -2,7 +2,7 @@ The goal of the project is to create the complete family tree for the Rurik dyna
 
 *The animation is in Russian but it is translated on the actual web page [lisakov.com/en/tree](/en/tree/).*
 
-[![Rurikids](/animation/tree.gif)](/en/tree/)
+[![Rurikids](http://lisakov.com/animation/tree.gif)](/en/tree/)
 
 
 <!-- more -->
