@@ -1,11 +1,9 @@
 The goal of the project is to create the complete family tree for the Rurik dynasty (Rurikids) who ruled the lands of Rus from 862 until 1598. Goal has been achieved (this family tree contains more than 750 people!) but there are lots of features to add.
 
-*The animation is in Russian but it is translated on the actual web page [lisakov.com/en/tree](/en/tree/).*
+*The animation is in Russian but it is translated on the actual web page [lisakov.com/en/tree](https://lisakov.com/en/projects/tree/).*
 
-[![Rurikids](http://lisakov.com/animation/tree.gif)](/en/tree/)
+[![Rurikids](http://lisakov.com/animation/tree.gif)](https://lisakov.com/en/projects/tree/)
 
-
-<!-- more -->
 
 ## Authors:
 
@@ -13,8 +11,6 @@ The goal of the project is to create the complete family tree for the Rurik dyna
 **[Sergey Lisakov](http://lisakov.com/en/me):** idea, design, data, dull coding, make a very good man work.
 
 ## Technical info:
-
-See the project on [GitHub](https://github.com/pozitron57/rurik).
 
 The [D3.js](http://d3js.org/) collapsible tree [template](http://bl.ocks.org/robschmuecker/7880033) is used.
 
