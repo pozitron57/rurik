@@ -1,4 +1,4 @@
-The goal of the project is to create the complete family tree for the Rurik dynasty (Rurikids) who ruled the lands of Rus from 862 until 1598. Goal has been achieved (this family tree contains more than 750 nodes) but there are lots of features to add.
+The goal of the project is to create the complete family tree for the Rurik dynasty (Rurikids) who ruled the lands of Rus from 862 until 1598. This family tree currently contains 837 nodes.
 
 *The animation is in Russian but it is translated on the actual web page [lisakov.com/en/projects/tree](https://lisakov.com/en/projects/tree/).*
 
