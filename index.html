@@ -3,32 +3,25 @@
 <html>
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <!-- <meta name="keywords" content="Родословная, Рюриковичи, генеалогия, князь, Русь"> -->
+  <meta name="keywords" content="Родословная, Рюриковичи, генеалогия, князь, Русь">
   <meta name="description" content="Полная родословная Рюриковичей. Генеалогическое древо Рюриковичей. Все ветви до колена Ивана Грозного.">
   <title>Рюриковичи. Полная родословная.</title>
 
-  <meta name="HandheldFriendly" content="True">
-  <meta name="MobileOptimized" content="320">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
   <meta property="og:site_name" content="Лисаков и макромир"/>
-
-  <meta property="og:image" content="http://lisakov.com/images/tree.jpg" />
+  <meta property="og:image" content="//lisakov.com/images/tree.jpg" />
   <meta property="og:image:type" content="image/jpeg" />
   <meta property="og:image:width" content="400" />
   <meta property="og:image:height" content="300" />
 
   <link href="treestyle.css" rel="stylesheet" type="text/css">
-  <link href="http://lisakov.com/css/bootstrap.css" rel="stylesheet" type="text/css">
-  <link href="http://lisakov.com/bootstrap-theme.css" rel="stylesheet" type="text/css">
 
-  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script> 
+  <script src="/js/jquery-2.1.4.min.js"></script>
   <script src="d3.js" charset="utf-8"></script>
   <script src="dndTree.js"></script>
-  <script src="http://lisakov.com/js/bootstrap.min.js"></script>
 
-  <link rel="icon" href="http://lisakov.com/favicon.ico" type="image/x-icon">
-  <link rel="shortcut icon" href="http://lisakov.com/favicon.ico" type="image/x-icon">
+  <link rel="icon" href="//lisakov.com/favicon.ico" type="image/x-icon">
+  <link rel="shortcut icon" href="//lisakov.com/favicon.ico" type="image/x-icon">
 
   <script>
     (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
@@ -44,78 +37,31 @@
 </head>
 
 <body>
-<header role="banner">
-  <nav class="navbar navbar-default" role="navigation">
-    <div class="container">
-      <div class="navbar-header">
-        <button type="button" class="navbar-toggle" title="Показать меню" data-toggle="collapse" data-target=".navbar-collapse">
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-        </button>
-       <a class="navbar-brand beta" href="http://lisakov.com/blog/2014/11/25/rurik-pedigree/" title="Это бета-версия родословной, но это уже самая полная родословная Рюриковичей в интернете. Если Вы хотите оставить отзыв, помочь или узнать больше о проекте, перейдите на страницу с его подробным описанием и планами, нажав на «β» или на «О странице»">β</a>
+
+  <nav>
+    <div class="nav-rapper">
+        <a class="beta" href="/blog/rurik-pedigree/" title="Это бета-версия родословной, но это уже самая полная родословная Рюриковичей в интернете. Если Вы хотите оставить отзыв, помочь или узнать больше о проекте, перейдите на страницу с его подробным описанием и планами, нажав на «β» или на «О странице»">β</a>
+        <a id="what-to-do"><span title="Щёлкните на любого князя, имеющего показанных потомков, чтобы спрятать потомков. Щёлкните на любого князя с кружком оранжевого фона, чтобы показать его потомков. Перемещайте древо, цепляясь за фон (нажмите левой кнопкой мыши на пустое место и, удерживая кнопку нажатой, двигайте мышкой). Приближайте или удаляйте схему вращением колёсика мыши. Задержите курсор на князе, чтобы увидеть информацию о нём (пока доступны только годы жизни для первых пяти колен). По умолчанию при щелчке на князя разворачивается два колена.  В верхней панели управления вы можете изменить это число, чтобы по щелчку открывалось от 1 до 20 колен.">Что делать-то?</span></a>
+        <a id="hide-all">  <span title="Нажмите, чтобы спрятать всё древо в Рюрика."> </span> </a>
+        <a id="show-all">  <span title="Нажмите, чтобы раскрыть все узлы древа. Будет показано около 750 человек. Древо может уехать за пределы видимой области, но перетягивая фон, его снова можно найти. Двигайтесь на юго-восток."> </span> </a>
+        <span id="dropdown-description" title="Выберите, сколько поколений показывать по щелчку. Если не работает, то воспользуйтесь сначала кнопкой «Спрятать всех» или перезагрузите страницу.">Раскрывать поколений по щелчку:&nbsp;</span> 
+        <span id="dropdown-list" title="Выберите, сколько поколений показывать по щелчку. Если не работает, то воспользуйтесь сначала кнопкой «Спрятать всех» или перезагрузите страницу."></span>
+
+      <div class="right">
+        <a href="/blog/rurik-pedigree/" title="Перейти к странице об авторах, истории создания страницы, подробным инструкциям, планам, оставить отзыв.">
+          О&nbsp;странице
+        </a>&nbsp;&nbsp;
+
+        <a id="language" href="/en/projects/tree/">
+          English&nbsp;<img class="flag" src="/images/gb.png" />
+        </a>
       </div>
 
-      <div class="navbar-collapse collapse">
-        <ul class="nav navbar-nav">
-          <li class="dropdown">
-            <a href="#" class="dropdown-toggle" data-toggle="dropdown"><div title="Щёлкните на Рюрика. Перемещайтесь, цепляясь за фон (нажмите левой кнопкой мыши на пустое место и, удерживая кнопку нажатой, двигайте мышкой).  Приближайте или удаляйте схему вращением колёсика мыши.  Разворачивайте новые поколения, щёлкая на князя. Щёлкнув на него повторно, можно скрыть его потомков.  Задержите курсор на князе, чтобы увидеть информацию о нём (пока доступны только годы жизни для первых пяти колен).  Оранжевое заполнение кружка указывает, что есть скрытые потомки.  Пустой кружок означает, что потомков нет (или они уже показаны).  По умолчанию при щелчке на князя разворачивается два колена.  В верхней панели управления вы можете изменить это число, чтобы по щелчку открывалось от 1 до 20 колен. ">Что делать-то?<b class="caret"></b></div></a>
-            <ul class="dropdown-menu">
-              <li>
-                <a>
-Щёлкните на Рюрика. <br>
-Перемещайтесь, цепляясь за фон (нажмите левой кнопкой <br>
-мыши на пустое место и, удерживая кнопку  нажатой, двигайте мышкой). <br>
-Приближайте или удаляйте  схему вращением колёсика мыши.<br>
-Задержите курсор на князе, чтобы увидеть информацию о нём <br>
-(пока доступны только годы жизни для первых пяти колен). <br>
-<br>
-Разворачивайте новые поколения, щёлкая на князя. Щёлкнув на него <br>
-него повторно, можно скрыть его потомков.<br>
-Оранжевое  заполнение кружка указывает, что есть скрытые потомки. <br>
-Пустой кружок означает, что потомков нет  (или они уже показаны). <br>
-По умолчанию  при щелчке на князя разворачивается два колена. <br>
-В верхней панели управления  вы можете изменить это число, <br>
-чтобы по щелчку открывалось от 1 до 20 колен.  </a>
-              </li>
-            </ul>
-          </li>
-
-          <li >
-            <a> <div id="hide-all" title="Нажмите, чтобы свернуть всё древо и оставить только Рюрика. После этого, чтобы начать разворачивать древо, щёлкните на Рюрика. Если требуется, поменяйте значение «Раскрывать поколений по щелчку»."> </div> </a>
-          </li>
-          
-          <li >
-            <a> <div id="show-all" title="По нажатию на эту кнопку древо может выехать за пределы окна. Чтобы найти его, уменьшите масштаб (покрутите колесо мыши)."> </div> </a>
-          </li>
-
-        </ul>
-
-        <ul class="nav navbar-nav navbar-right">
-          <li >
-            <a><span title="Выбрать, сколько поколений показывать по первому щелчку на князя. Если, например, после Рюрика уже было раскрыто 5 поколений и затем скрыто щелчком по Рюрику, то любое меньшее 5 число будет проигнорировано и восстановится предыдущий вид. Чтобы оно заработало, надо нажать кнопку «Спрятать всех» в раскрытом состоянии.">Раскрывать поколений по щелчку:</span></a>
-          </li>
-          
-          <li >
-             <a> <div id="dropdown-list" title="Выбрать, сколько поколений показывать по первому щелчку на князя. Если, например, после Рюрика уже было раскрыто 5 поколений и затем скрыто щелчком по Рюрику, то любое меньшее 5 число будет проигнорировано и восстановится предыдущий вид. Чтобы оно заработало, надо нажать кнопку «Спрятать всех» в раскрытом состоянии."></div> </a>
-          </li>
-
-           <li >
-            <a href="http://lisakov.com/blog/2014/11/25/rurik-pedigree/"><div title="Авторы, история создания страницы, подробные инструкции, планы, оставить отзыв.">О странице</div></a>
-          </li>
-
-           <li >
-            <a href="/en/tree/">English <img src="/images/gb.png" /></a>
-          </li>
-
-        </ul>
-      </div>
     </div>
   </nav>
-</header>
-
 
 <div id="tree-container"></div>
 
 </body>
+
 </html>
