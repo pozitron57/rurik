@@ -305,7 +305,7 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
             }
         };
         childCount(0, root);
-        var newHeight = d3.max(levelWidth) * 31; // lisakov set vertical distance px per line.
+        var newHeight = d3.max(levelWidth) * 36; // lisakov set vertical distance px per line.
         tree = tree.size([newHeight, viewerWidth]);
 
         // Compute the new tree layout.
@@ -384,7 +384,6 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
             .style("stroke", function(d) { return d.granica; })
             .style("fill", function(d) {
                 return d._children ? "#FFC576" : "white";});
-                //lisakov wondering how to use variables instead...
 
         // Transition nodes to their new position.
         var nodeUpdate = node.transition()
