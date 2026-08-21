@@ -194,10 +194,52 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
     function hideInParent(d) {
         var p = d.parent;
         if (!p || !p.children || parseFloat(p.radius) < 0.1) return null;
+        // A long press on a touch screen can be followed by a native
+        // contextmenu event for the same node, so hiding must be idempotent.
+        if (p.children.indexOf(d) === -1) return null;
         p.children = p.children.filter(function(c) { return c !== d; });
         p._children = mergeKids(p._children, [d]);
         if (p.children.length === 0) p.children = null;
         return p;
+    }
+
+    // Right-click, or a long press on a touch screen, hides a node inside its
+    // parent. It works on any node: one with children takes its whole subtree
+    // along, untouched for as long as it stays hidden. Bringing it back is a
+    // click on the parent, which runs the usual "expand N generations" pass,
+    // so a node that was collapsed when hidden does come back expanded.
+    var longPressDelay = 600;
+    var longPressTimer = null;
+    var longPressAt = 0;
+
+    function hide_handler(d) {
+        var p = hideInParent(d);
+        if (!p) return;
+        update(p);
+        liscenterNode(p);
+    }
+
+    function hide_on_right_click(d) {
+        d3.event.preventDefault();
+        hide_handler(d);
+    }
+
+    function long_press_cancel() {
+        if (longPressTimer) {
+            clearTimeout(longPressTimer);
+            longPressTimer = null;
+        }
+    }
+
+    function long_press_start(d) {
+        long_press_cancel();
+        longPressTimer = setTimeout(function() {
+            longPressTimer = null;
+            // The browser still sends a click on touchend; remember when the
+            // press fired so that click does not expand what was just hidden.
+            longPressAt = Date.now();
+            hide_handler(d);
+        }, longPressDelay);
     }
 
     function collapse(d) {
@@ -280,11 +322,11 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
 
     function click(d) {
         if (d3.event.defaultPrevented) return; // click suppressed
+        if (Date.now() - longPressAt < 1000) return; // already hidden by a long press
     click_handler(d);
     }
 
     function click_handler(d) {
-        var focus = d;
         if (d._children) {
             var nodes = [d];
             for (var i = 0; i < numberOfGenerations; i++ ) {
@@ -315,13 +357,8 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
             d._children = d.children;
             d.children = null;
         }
-        else {
-            // Childless node: hide it inside its parent. The parent stays put,
-            // so centre on it rather than on the node that just went away.
-            focus = hideInParent(d) || d;
-        }
-        update(focus);
-        liscenterNode(focus);
+        update(d);
+        liscenterNode(d);
     return nodes;
     }
 
@@ -371,7 +408,12 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
             .attr("transform", function(d) {
                 return "translate(" + source.y0 + "," + source.x0 + ")";
             })
-            .on('click', click);
+            .on('click', click)
+            .on('contextmenu', hide_on_right_click)
+            .on('touchstart', long_press_start)
+            .on('touchmove', long_press_cancel)
+            .on('touchend', long_press_cancel)
+            .on('touchcancel', long_press_cancel);
 
 //lisakov modified for getting colors from json
         nodeEnter.append("circle")
