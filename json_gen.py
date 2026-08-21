@@ -69,7 +69,7 @@ with open('tree.json', 'w') as fp:
     json.dump(
         tree,
         fp,
-        sort_keys = False, 
+        sort_keys = True,
         indent = None,
         ensure_ascii = False
     )

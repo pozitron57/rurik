@@ -1,0 +1,3 @@
+# tree.json is generated from source.data by json_gen.py.
+# Edit source.data, then regenerate; never edit tree.json by hand.
+tree.json linguist-generated=true
