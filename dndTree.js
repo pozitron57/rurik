@@ -4,12 +4,6 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
     // Calculate total nodes, max label length
     var totalNodes = 0;
     var maxLabelLength = 10;
-    // variables for drag/drop
-    var selectedNode = null;
-    var draggingNode = null;
-    // panning variables
-    var panSpeed = 200;
-    var panBoundary = 20; // Within 20px from edges will pan when dragging.
     // Misc. variables
     var i = 0;
     var duration = 757;
@@ -22,7 +16,7 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
     // this text means "Show everebody"
         .text("Показать всех")
         .on('click', function (data, index) {
-            expandAll(root);
+            expand(root);
             update(root);
         });
 
@@ -119,61 +113,6 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
         .attr("class", "overlay")
         .call(zoomListener);
 
-    // Define the drag listeners for drag/drop behaviour of nodes.
-    dragListener = d3.behavior.drag()
-        .on("dragstart", function(d) {
-            if (d == root) {
-                return;
-            }
-            dragStarted = true;
-            nodes = tree.nodes(d);
-            d3.event.sourceEvent.stopPropagation();
-            // it's important that we suppress the mouseover event on the node being dragged. Otherwise it will absorb the mouseover event and the underlying node will not detect it d3.select(this).attr('pointer-events', 'none');
-        })
-        .on("drag", function(d) {
-            if (d == root) {
-                return;
-            }
-            if (dragStarted) {
-                domNode = this;
-                initiateDrag(d, domNode);
-            }
-
-            d.x0 += d3.event.dy;
-            d.y0 += d3.event.dx;
-            var node = d3.select(this);
-            node.attr("transform", "translate(" + d.y0 + "," + d.x0 + ")");
-            updateTempConnector();
-        }).on("dragend", function(d) {
-            if (d == root) {
-                return;
-            }
-            domNode = this;
-            if (selectedNode) {
-                // now remove the element from the parent, and insert it into the new elements children
-                var index = draggingNode.parent.children.indexOf(draggingNode);
-                if (index > -1) {
-                    draggingNode.parent.children.splice(index, 1);
-                }
-                if (typeof selectedNode.children !== 'undefined' || typeof selectedNode._children !== 'undefined') {
-                    if (typeof selectedNode.children !== 'undefined') {
-                        selectedNode.children.push(draggingNode);
-                    } else {
-                        selectedNode._children.push(draggingNode);
-                    }
-                } else {
-                    selectedNode.children = [];
-                    selectedNode.children.push(draggingNode);
-                }
-                // Make sure that the node being added to is expanded so user can see added node is correctly moved
-                expand(selectedNode);
-                sortTree();
-                endDrag();
-            } else {
-                endDrag();
-            }
-        });
-
     // Helper functions for collapsing and expanding nodes.
 
     // Children can now be hidden one at a time, so a node may hold shown and
@@ -242,11 +181,18 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
         }, longPressDelay);
     }
 
+    // Both of these walk the entire subtree. Neither may stop at a node that
+    // is already in the wanted state: a left click collapses a single level
+    // and leaves everything below it untouched, so a collapsed node can hold
+    // expanded descendants and the other way round. Stopping early is what
+    // used to leave "Show everyone" with several hundred nodes still folded.
     function collapse(d) {
         if (d.children) {
             d._children = mergeKids(d.children, d._children);
-            d._children.forEach(collapse);
             d.children = null;
+        }
+        if (d._children) {
+            d._children.forEach(collapse);
         }
     }
 
@@ -254,67 +200,10 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
         if (d._children) {
             d.children = mergeKids(d.children, d._children);
             d._children = null;
+        }
+        if (d.children) {
             d.children.forEach(expand);
         }
-    }
-
-    function expandAll(d) {
-        if (d.children) {
-            d.children.forEach(expandAll);
-        }
-        expand(d);
-    }
-
-    var overCircle = function(d) {
-        selectedNode = d;
-        updateTempConnector();
-    };
-    var outCircle = function(d) {
-        selectedNode = null;
-        updateTempConnector();
-    };
-
-    // Function to update the temporary connector indicating dragging affiliation
-    var updateTempConnector = function() {
-        var data = [];
-        if (draggingNode !== null && selectedNode !== null) {
-            // have to flip the source coordinates since we did this for the existing connectors on the original tree
-            data = [{
-                source: {
-                    x: selectedNode.y0,
-                    y: selectedNode.x0
-                },
-                target: {
-                    x: draggingNode.y0,
-                    y: draggingNode.x0
-                }
-            }];
-        }
-        var link = svgGroup.selectAll(".templink").data(data);
-
-        link.enter().append("path")
-            .attr("class", "templink")
-            .attr("d", d3.svg.diagonal())
-            .attr('pointer-events', 'none');
-
-        link.attr("d", d3.svg.diagonal());
-
-        link.exit().remove();
-    };
-
-    // Function to center node when clicked/dropped so node doesn't get lost when collapsing/moving with large amount of children.
-
-    function centerNode(source) {
-        scale = zoomListener.scale();
-        x = -source.y0;
-        y = -source.x0;
-        x = x * scale + viewerWidth / 2; // lisakov do not change horizontal position
-        y = y * scale + viewerHeight / 2;
-        d3.select('g').transition()
-            .duration(duration)
-            .attr("transform", "translate(" + x + "," + y + ")scale(" + scale + ")");
-        zoomListener.scale(scale);
-        zoomListener.translate([x, y]);
     }
 
     // Toggle children on click.
@@ -403,7 +292,6 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
 
         // Enter any new nodes at the parent's previous position.
         var nodeEnter = node.enter().append("g")
-            .call(dragListener)
             .attr("class", "node")
             .attr("transform", function(d) {
                 return "translate(" + source.y0 + "," + source.x0 + ")";
@@ -563,10 +451,6 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
     root = treeData;
     root.x0 = viewerHeight / 2;
     root.y0 = 0;
-
-    // Layout the tree initially and center on the root node.
-    //update(root);
-    //centerNode(root);
 
     // lisakov positioning node after click
     function liscenterNode(source) {
