@@ -88,6 +88,11 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
     visit(treeData, function(d) {
         totalNodes++;
         maxLabelLength = Math.max(d.name.length, maxLabelLength);
+        // Remember each child's position among its siblings, so that a list
+        // split into shown/hidden parts can always be merged back in order.
+        if (d.children) {
+            d.children.forEach(function(c, n) { c.ord = n; });
+        }
 
     }, function(d) {
         return d.children && d.children.length > 0 ? d.children : null;
@@ -171,9 +176,33 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
 
     // Helper functions for collapsing and expanding nodes.
 
+    // Children can now be hidden one at a time, so a node may hold shown and
+    // hidden children at once. Any time the two lists are joined back together
+    // they are reordered by 'ord' to keep the original source.data order.
+    function mergeKids(a, b) {
+        return (a || []).concat(b || []).sort(function(p, q) { return p.ord - q.ord; });
+    }
+
+    // True when only part of a node's offspring is on screen.
+    function isPartial(d) {
+        return !!(d.children && d.children.length && d._children && d._children.length);
+    }
+
+    // Tuck a childless node away into its parent. Returns the parent, or null
+    // when there is nowhere to tuck it: an invisible parent (only the root)
+    // would show no marker, leaving no way to click the node back into view.
+    function hideInParent(d) {
+        var p = d.parent;
+        if (!p || !p.children || parseFloat(p.radius) < 0.1) return null;
+        p.children = p.children.filter(function(c) { return c !== d; });
+        p._children = mergeKids(p._children, [d]);
+        if (p.children.length === 0) p.children = null;
+        return p;
+    }
+
     function collapse(d) {
         if (d.children) {
-            d._children = d.children;
+            d._children = mergeKids(d.children, d._children);
             d._children.forEach(collapse);
             d.children = null;
         }
@@ -181,9 +210,9 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
 
     function expand(d) {
         if (d._children) {
-            d.children = d._children;
-            d.children.forEach(expand);
+            d.children = mergeKids(d.children, d._children);
             d._children = null;
+            d.children.forEach(expand);
         }
     }
 
@@ -255,6 +284,7 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
     }
 
     function click_handler(d) {
+        var focus = d;
         if (d._children) {
             var nodes = [d];
             for (var i = 0; i < numberOfGenerations; i++ ) {
@@ -271,8 +301,10 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
                     if (x._children) {
                         x._children.forEach( function(y) {
                             new_nodes.push(y);
-                            x.children.push(y);
                         } );
+                        // Merge rather than append: siblings may have been
+                        // hidden one at a time, so order has to be restored.
+                        x.children = mergeKids(x.children, x._children);
                         x._children = null;
                     }
                 });
@@ -283,8 +315,13 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
             d._children = d.children;
             d.children = null;
         }
-        update(d);
-        liscenterNode(d);
+        else {
+            // Childless node: hide it inside its parent. The parent stays put,
+            // so centre on it rather than on the node that just went away.
+            focus = hideInParent(d) || d;
+        }
+        update(focus);
+        liscenterNode(focus);
     return nodes;
     }
 
@@ -342,6 +379,10 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
             //.style("stroke", function(d) { return d.granica; })
             //.style("fill", function(d) { return d.zapolnenie; });
 
+        // Marks a node whose offspring is only partly shown.
+        nodeEnter.append("path")
+            .attr("class", "partial-mark");
+
         nodeEnter.append("title")
             .text( function(d) {
                 if ( d.birth == "" ){
@@ -384,6 +425,18 @@ treeJSON = d3.json("tree.json", function(error, treeData) {
             .style("stroke", function(d) { return d.granica; })
             .style("fill", function(d) {
                 return d._children ? "#FFC576" : "white";});
+
+        // Draw a plus inside the circle when some children are shown and some
+        // are hidden, so the node reads as "there is more underneath me".
+        // Sized off the node's own radius, which keeps invisible nodes invisible.
+        node.select("path.partial-mark")
+            .style("display", function(d) { return isPartial(d) ? null : "none"; })
+            .style("stroke-width", function(d) { return d.radius * 0.28; })
+            .attr("d", function(d) {
+                if (!isPartial(d)) return null;
+                var a = d.radius * 0.55;
+                return "M" + (-a) + ",0H" + a + "M0," + (-a) + "V" + a;
+            });
 
         // Transition nodes to their new position.
         var nodeUpdate = node.transition()

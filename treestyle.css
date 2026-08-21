@@ -20,3 +20,6 @@ select { background:white; }
 }
 
 .right { float:right; }
+
+/* Plus drawn inside a node whose offspring is only partly shown */
+.partial-mark { fill:none; stroke:#8B4513; stroke-linecap:round; pointer-events:none; }
