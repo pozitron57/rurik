@@ -1,7 +1,7 @@
 #tree-container { position:fixed; }
 
 body { padding:0; margin:0; font-family:sans-serif; font-size:13px; }
-nav { background-color:#EEEEEE; padding:4px; margin:0; border-bottom:1px solid #AAAAAA; }
+nav { background-color:#EEEEEE; padding:6px 10px 2px; margin:0; border-bottom:1px solid #AAAAAA; }
 nav a { text-decoration:none; color:steelblue;}
 
 select { background:white; }
@@ -14,8 +14,6 @@ select { background:white; }
 
 .link { fill:none; stroke-width:0.9px; }
 
-.beta { color:darkorange; font-size:20pt; line-height:0.6em; padding:0 5px 0;}
-.beta:hover { background:darkorange; color:white; border-radius:4px; }
 @media screen and (max-width:767px) { 
   .beta { margin-top:0; }
   nav { padding:0; margin:0; }
