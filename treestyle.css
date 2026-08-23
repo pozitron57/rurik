@@ -201,13 +201,13 @@ a.btn { display: inline-block; line-height: normal; }
   padding: 1px 6px 1px 7px;
   margin: 0 1px;
   cursor: pointer;
-  display: inline-flex; align-items: center; gap: 5px;
+  display: inline-flex; align-items: center; gap: 4px;
 }
 .gens-btn:hover, .gens-btn[aria-expanded="true"] {
   color: var(--zoom-text); border-color: var(--hover-ring);
 }
 #gens-val { min-width: 2ch; text-align: left; }
-.gens-btn .caret { width: 10px; height: 6px; flex: none; fill: currentColor; opacity: 0.85; }
+.gens-btn .caret { width: 7px; height: 4.2px; flex: none; fill: currentColor; opacity: 0.85; }
 
 #gens-list {
   position: absolute; z-index: 60;
