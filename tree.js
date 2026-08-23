@@ -34,6 +34,14 @@ const TIP_DELAY = 850;
 // one.
 const hovers = (e) => e.pointerType !== 'touch';
 
+// The margin the tree keeps from the left of the screen — both when a click
+// brings an opening into view and when a swipe settles on a generation, so the
+// two agree on where "at the left edge" is.
+const EDGE = 24;
+// Long enough to read as coming to rest, short enough not to be a journey.
+const SNAP_MS = 200;
+const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)');
+
 const ENT = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' };
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ENT[c]);
 
@@ -59,7 +67,7 @@ class Observatory {
     this.tipName = document.getElementById('tip-name');
     this.tipMeta = document.getElementById('tip-meta');
 
-    this.state = { nodes: [], links: [], bands: [], ticks: [], width: 0, height: 0 };
+    this.state = { nodes: [], links: [], bands: [], ticks: [], colX: [], width: 0, height: 0 };
     this.cam = { x: 120, y: 120, s: 1 };
     this.ROW_BASE = 21;
     this.ROW_MIN = 16;
@@ -169,7 +177,8 @@ class Observatory {
     }));
 
     this.state = {
-      nodes: L.nodes, links: L.links, bands, ticks, width: L.width, height: L.height,
+      nodes: L.nodes, links: L.links, bands, ticks,
+      colX: L.colX || [], width: L.width, height: L.height,
     };
     this.render();
 
@@ -316,7 +325,7 @@ class Observatory {
   reveal(anchorId, fresh) {
     const anchor = this.shown.get(anchorId);
     if (!anchor) return;
-    const s = this.cam.s, pad = 24, view = this.viewport().w;
+    const s = this.cam.s, pad = EDGE, view = this.viewport().w;
     const left = anchor.x;
     let right = left;
     for (const v of fresh) right = Math.max(right, v.x + v.w);
@@ -329,6 +338,48 @@ class Observatory {
       if (right * s + x > view - pad) x = view - pad - right * s;
       this.cam.x = x;
     }
+  }
+
+  // A generation is the only landmark this tree has across, so a finger that
+  // pans sideways comes to rest on one: a column's left edge against the left
+  // of the screen. Free while the finger is down, a short glide to the nearest
+  // landmark when it lifts. At either end the tree's own edge outranks any
+  // column, so a swipe cannot strand one column beside a screen of nothing.
+  snapX() {
+    const cols = this.state.colX;
+    if (!cols || cols.length < 2) return null;
+    const s = this.cam.s;
+    const hi = EDGE;                                       // first column, flush left
+    const lo = this.viewport().w - EDGE - this.state.width * s;  // last of the tree, flush right
+    if (lo >= hi) return null;                             // it all fits; nothing to page through
+    let best = null, gap = Infinity;
+    for (const x of cols) {
+      const at = Math.min(hi, Math.max(lo, EDGE - x * s));
+      const d = Math.abs(at - this.cam.x);
+      if (d < gap) { gap = d; best = at; }
+    }
+    return best;
+  }
+
+  glideX(to) {
+    this.stopGlide();
+    const from = this.cam.x, span = to - from;
+    if (Math.abs(span) < 0.5 || REDUCED.matches) {
+      this.cam.x = to; this.applyCam(); return;
+    }
+    const t0 = performance.now();
+    const step = (now) => {
+      const k = Math.min(1, (now - t0) / SNAP_MS);
+      // Off the finger at speed, settling gently: the tail of a cubic.
+      this.cam.x = from + span * (1 - Math.pow(1 - k, 3));
+      this.applyCam();
+      this.glide = k < 1 ? requestAnimationFrame(step) : null;
+    };
+    this.glide = requestAnimationFrame(step);
+  }
+
+  stopGlide() {
+    if (this.glide) { cancelAnimationFrame(this.glide); this.glide = null; }
   }
 
   zoomBy(f, cx, cy) {
@@ -508,8 +559,9 @@ class Observatory {
       if (e.target.closest('.panel')) return;
       pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
       if (e.button === 2) return;
+      this.stopGlide();
       if (pts.size === 2) { drag = null; this.pinch = this.pinchState(pts); return; }
-      drag = { x: e.clientX, y: e.clientY, cx: this.cam.x, cy: this.cam.y };
+      drag = { x: e.clientX, y: e.clientY, cx: this.cam.x, cy: this.cam.y, dx: 0, dy: 0 };
       moved = 0;
       st.classList.add('grabbing');
       const card = e.target.closest && e.target.closest('[data-id]');
@@ -521,16 +573,24 @@ class Observatory {
       if (pts.size === 2 && this.pinch) { this.doPinch(pts); return; }
       if (!drag) return;
       const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+      drag.dx = dx; drag.dy = dy;
       moved = Math.max(moved, Math.abs(dx) + Math.abs(dy));
       if (moved > 4) { this.cancelLongPress(); this.hideTip(); }
       this.cam.x = drag.cx + dx; this.cam.y = drag.cy + dy;
       this.applyCam();
     });
     const up = (e) => {
+      // A finger, on the last of its own gesture, having gone more across than
+      // down. A mouse can be put anywhere exactly and is left where it is put;
+      // a pinch has already said what it wanted; a scroll down the page is not
+      // a request to move sideways at all.
+      const settle = drag && e.pointerType === 'touch' && pts.size === 1 &&
+        Math.abs(drag.dx) > Math.abs(drag.dy) && Math.abs(drag.dx) > 8;
       pts.delete(e.pointerId);
       if (pts.size < 2) this.pinch = null;
       drag = null; st.classList.remove('grabbing');
       this.cancelLongPress();
+      if (settle) { const to = this.snapX(); if (to != null) this.glideX(to); }
     };
     st.addEventListener('pointerup', up);
     st.addEventListener('pointercancel', up);
