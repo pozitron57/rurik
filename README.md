@@ -19,9 +19,10 @@ the camera; `treestyle.css` holds both palettes and every colour on the page.
 A card carries classes for what it *is* — which column it sits in, whether it is
 on the main line, what its mark has to say — and the stylesheet decides what
 that looks like, which is why switching themes writes one attribute and rebuilds
-nothing. The earlier [D3.js](http://d3js.org/) collapsible tree
-[template](http://bl.ocks.org/robschmuecker/7880033) it replaced is still in the
-repository as `d3.js` and `dndTree.js`, unused.
+nothing. It replaced a [D3.js](http://d3js.org/) collapsible tree
+[template](http://bl.ocks.org/robschmuecker/7880033); the last commit that still
+loaded it is `8b12a34^`, and `d3.js` and `dndTree.js` live there, in the history,
+rather than in the working tree.
 
 The only face the page downloads is JetBrains Mono, served from this domain —
 nothing is requested from a third party. `jetbrainsmono-400.woff2` and
