@@ -27,6 +27,13 @@ const generations = (n) => {
 // enough that resting on one asks a question and gets an answer.
 const TIP_DELAY = 850;
 
+// A finger is not a pointer resting on something. It lands on whoever happens
+// to be under it on its way to dragging the canvas, and it is gone again the
+// moment the tap ends — so it asks no question about that person, and nothing
+// lights up or offers dates in answer. A pen hovers like a mouse and counts as
+// one.
+const hovers = (e) => e.pointerType !== 'touch';
+
 const ENT = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' };
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ENT[c]);
 
@@ -510,7 +517,7 @@ class Observatory {
     });
     st.addEventListener('pointermove', (e) => {
       if (pts.has(e.pointerId)) pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
-      this.tipPos = { x: e.clientX, y: e.clientY }; this.moveTip();
+      if (hovers(e)) { this.tipPos = { x: e.clientX, y: e.clientY }; this.moveTip(); }
       if (pts.size === 2 && this.pinch) { this.doPinch(pts); return; }
       if (!drag) return;
       const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
@@ -560,6 +567,7 @@ class Observatory {
       if (n) this.hideAnimated(n, card);
     });
     this.camEl.addEventListener('pointerover', (e) => {
+      if (!hovers(e)) return;
       const card = e.target.closest('[data-id]');
       if (!card || card === this.hoverEl) return;
       this.hoverEl = card;
