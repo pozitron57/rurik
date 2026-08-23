@@ -291,19 +291,57 @@ class Observatory {
   reveal(anchorId, fresh) {
     const anchor = this.byId.get(anchorId);
     if (!anchor) return;
+    const from = this.cam.x;
     const s = this.cam.s, pad = 24, view = this.viewport().w;
     const left = anchor.x;
     let right = left;
     for (const v of fresh) right = Math.max(right, v.x + v.w);
     if ((right - left) * s > view - pad * 2) {
       this.cam.x = pad - left * s;
-      return;
+    } else {
+      // It fits, so move as little as possible to bring the whole of it on.
+      let x = this.cam.x;
+      if (left * s + x < pad) x = pad - left * s;
+      if (right * s + x > view - pad) x = view - pad - right * s;
+      this.cam.x = x;
     }
-    // It fits, so move as little as possible to bring the whole of it on.
-    let x = this.cam.x;
-    if (left * s + x < pad) x = pad - left * s;
-    if (right * s + x > view - pad) x = view - pad - right * s;
-    this.cam.x = x;
+    if (this.cam.x !== from) this.glide();
+  }
+
+  // The camera crosses the distance rather than jumping it, so the eye can
+  // follow the tree sideways instead of re-finding it. Handed to a CSS
+  // transition, not a loop: in a background tab a rAF loop would never run
+  // and would leave the camera stranded half way.
+  glide() {
+    // Where the camera is *painted* right now, which is still the pre-click
+    // position: applyCam has not run yet. stopGlide compares against this to
+    // tell a transition that progressed from one that never started.
+    const m = new DOMMatrixReadOnly(getComputedStyle(this.camEl).transform);
+    this.glideFrom = { x: m.e, y: m.f };
+    this.gliding = true;
+    this.camEl.classList.add('gliding');
+    this.ruler.classList.add('gliding');
+    clearTimeout(this.glideT);
+    this.glideT = setTimeout(() => this.stopGlide(), 420);
+  }
+
+  // Anything the reader does outranks the glide. Taking the painted position
+  // first means grabbing a moving tree does not snap it forward — but only
+  // when it really moved: a background tab runs no transition at all, and
+  // adopting its untouched transform would quietly undo the pan.
+  stopGlide() {
+    if (!this.gliding) return;
+    this.gliding = false;
+    clearTimeout(this.glideT);
+    const m = new DOMMatrixReadOnly(getComputedStyle(this.camEl).transform);
+    const f = this.glideFrom;
+    this.camEl.classList.remove('gliding');
+    this.ruler.classList.remove('gliding');
+    if (Math.abs(m.e - f.x) > 0.5 || Math.abs(m.f - f.y) > 0.5) {
+      this.cam.x = m.e;
+      this.cam.y = m.f;
+    }
+    this.applyCam();
   }
 
   zoomBy(f, cx, cy) {
@@ -467,12 +505,14 @@ class Observatory {
 
     st.addEventListener('wheel', (e) => {
       e.preventDefault();
+      this.stopGlide();
       this.zoomBy(Math.pow(0.9988, e.deltaY * (e.deltaMode === 1 ? 18 : 1)), e.clientX, e.clientY);
     }, { passive: false });
 
     let drag = null, moved = 0;
     const pts = new Map();
     st.addEventListener('pointerdown', (e) => {
+      this.stopGlide();
       if (e.target.closest('.panel')) return;
       pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
       if (e.button === 2) return;
@@ -510,6 +550,7 @@ class Observatory {
       if (!card) return;
       const n = this.find(+card.dataset.id);
       if (!n) return;
+      this.stopGlide();
       const before = new Set(this.state.nodes.map((v) => v.id));
       eng.toggle(n, e.altKey || e.shiftKey ? MAX_GENS : this.gens);
       this.relayout(n.id, () => {
@@ -518,7 +559,7 @@ class Observatory {
         const fresh = this.state.nodes.filter((v) => !before.has(v.id));
         if (fresh.length) this.reveal(n.id, fresh);
         this.applyCam();
-        if (fresh.length) this.flash(fresh.map((v) => v.id));
+        if (fresh.length) this.flash(fresh.map((v) => v.id), true);
       });
     });
     st.addEventListener('contextmenu', (e) => {
@@ -601,12 +642,18 @@ class Observatory {
   // the parent that swallowed the branch; after an opening, everything that
   // just appeared. Classes rather than inline styles, so opening a
   // thousand-node branch costs two class writes per node, not a stylesheet.
-  flash(ids) {
+  flash(ids, withWires) {
     this.clearFlash();
     const els = [];
     for (const id of (Array.isArray(ids) ? ids : [ids])) {
       const card = this.camEl.querySelector('[data-id="' + id + '"]');
       if (card) els.push(card);
+      // A wire is named after the node it carries, so it is new exactly when
+      // that node is. After a fold nothing new arrived, and the parent's own
+      // wire has no business lighting up.
+      if (!withWires) continue;
+      const wire = this.wires.querySelector('[data-link="' + id + '"]');
+      if (wire) els.push(wire);
     }
     if (!els.length) return;
     for (const el of els) el.classList.add('flashing', 'flash');

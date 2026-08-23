@@ -101,6 +101,11 @@ body {
 
 #cam { position: absolute; top: 0; left: 0; transform-origin: 0 0; will-change: transform; }
 
+/* Only ever on for the sideways glide after an opening — dragging and zooming
+   must stay welded to the pointer. The ruler carries it too, or the numerals
+   would arrive after their columns. */
+#cam.gliding, #ruler.gliding { transition: transform 380ms var(--ease); }
+
 #bands, #wires { position: absolute; top: 0; left: 0; overflow: visible; pointer-events: none; }
 #cards { position: absolute; top: 0; left: 0; }
 
@@ -144,7 +149,7 @@ body {
    comes on at once and fades out at leisure. The `!important`s are aimed at
    the per-node inline colours the layout writes, not at other rules. */
 .node.flashing { transition: background 760ms var(--ease), box-shadow 760ms var(--ease); }
-.node.flashing .name { transition: color 760ms var(--ease), font-weight 760ms var(--ease); }
+.node.flashing .name { transition: color 760ms var(--ease); }
 .node.flashing .caption { transition: color 760ms var(--ease); }
 .node.flashing .dot {
   transition: transform 760ms var(--ease), box-shadow 760ms var(--ease), border-color 760ms var(--ease);
@@ -154,12 +159,22 @@ body {
   background: rgba(var(--flash-rgb), 0.14);
   box-shadow: 0 0 0 1px rgba(var(--flash-rgb), 0.65), 0 0 16px rgba(var(--flash-rgb), 0.28);
 }
-.node.flash .name {
-  transition-duration: 120ms;
-  color: var(--flash) !important;
-  font-weight: 700 !important;
-}
+.node.flash .name { transition-duration: 120ms; color: var(--flash) !important; }
 .node.flash .caption { transition-duration: 120ms; color: var(--flash) !important; }
+
+/* A wire is named after the node it carries, so lighting it alongside says
+   not just what appeared but what it grew out of. Stroke and width are
+   presentation attributes, which any rule outranks — no !important needed,
+   and hovering during a flash still wins with its inline style. */
+#wires path.flashing {
+  transition: stroke 760ms var(--ease), stroke-width 760ms var(--ease), filter 760ms var(--ease);
+}
+#wires path.flash {
+  transition-duration: 120ms;
+  stroke: var(--flash);
+  stroke-width: 2;
+  filter: drop-shadow(0 0 4px rgba(var(--flash-rgb), 0.55));
+}
 .node.flash .dot {
   transition-duration: 120ms;
   transform: scale(1.9);
