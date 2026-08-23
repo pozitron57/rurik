@@ -176,6 +176,36 @@ class Observatory {
     this.tickEls = [...this.ruler.querySelectorAll('.tick')];
     this.tickKey = null;
     if (then) then(); else this.applyCam();
+    // Only once the camera has settled, because it decides who is under the
+    // pointer now.
+    this.resettleHover();
+  }
+
+  // The cards the pointer was over have just been thrown away and built again,
+  // and a detached element never gets its pointerout — so nothing would ever
+  // put the tooltip out. Work the hover out again from where the pointer
+  // actually is. A click that opens a branch usually slides the clicked person
+  // out from under the cursor; when it does, their card of dates goes with
+  // them instead of trailing the cursor for the rest of the visit.
+  resettleHover() {
+    const p = this.tipPos;
+    const under = p ? document.elementFromPoint(p.x, p.y) : null;
+    const card = under && under.closest ? under.closest('[data-id]') : null;
+    const staying = card && this.tipId === +card.dataset.id && this.tip.style.opacity === '1';
+
+    clearTimeout(this.tipT);
+    this.clearHi();
+    this.hoverEl = card;
+
+    if (!card) { this.hideTip(); return; }
+    this.setHi(+card.dataset.id);
+    // Still the same person under the pointer: they keep the card they already
+    // earned. Anyone else has to be asked for it, the same as on a first hover.
+    if (staying) this.showTip(card);
+    else {
+      this.hideTip();
+      this.tipT = setTimeout(() => this.showTip(card), TIP_DELAY);
+    }
   }
 
   render() {
@@ -666,6 +696,7 @@ class Observatory {
     const n = this.shown.get(+card.dataset.id);
     // Nothing to say without dates — the name is already on screen.
     if (!n || !n.years) { this.hideTip(); return; }
+    this.tipId = n.id;
     this.tipName.textContent = n.name;
     const src = this.find(n.id);
     const bits = [n.years, 'колено ' + n.depth];
@@ -685,6 +716,7 @@ class Observatory {
   }
   hideTip() {
     clearTimeout(this.tipT);
+    this.tipId = null;
     this.tip.style.opacity = '0';
     this.tip.style.transform = 'translate(-9999px,-9999px)';
   }
