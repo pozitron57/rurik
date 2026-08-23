@@ -10,8 +10,19 @@ function measurer(font) {
   return _ctx;
 }
 
+// A name never changes and neither do the two faces the layout is set in, so
+// a width is worth exactly one measurement for the life of the page. It earns
+// its keep on a tree that does not fit the window: that is laid out twice,
+// once to discover it and once at the tighter row, and the widths cannot have
+// moved between the two. Keys are bounded by the data — a name, a descendant
+// count, a caption — so the map cannot grow without end.
+const _widths = new Map();
+
 export function measure(text, font) {
-  return measurer(font).measureText(text).width;
+  const key = font + '\u0000' + text;
+  let w = _widths.get(key);
+  if (w === undefined) _widths.set(key, w = measurer(font).measureText(text).width);
+  return w;
 }
 
 let _uid = 0;
@@ -236,7 +247,6 @@ export function layout(root, o) {
   };
   collect(root);
 
-  const ctx = measurer(o.font);
   const colW = [];
   for (const n of vis) {
     const partial = isPartial(n);
@@ -250,12 +260,10 @@ export function layout(root, o) {
     n._caption = partial
       ? 'показано ' + shownKids(n).length + ' из ' + n.kids.length + ' детей'
       : '';
-    let w = ctx.measureText(n.name).width + padX * 2 +
-      (showBadge ? o.badgeW + ctx.measureText(String(hidden)).width : 0);
+    let w = measure(n.name, o.font) + padX * 2 +
+      (showBadge ? o.badgeW + measure(String(hidden), o.font) : 0);
     if (partial && o.captionFont) {
-      ctx.font = o.captionFont;
-      w = Math.max(w, ctx.measureText(n._caption).width + padX * 2);
-      ctx.font = o.font;
+      w = Math.max(w, measure(n._caption, o.captionFont) + padX * 2);
     }
     n.w = Math.round(w);
     const d = n.depth - 1;
