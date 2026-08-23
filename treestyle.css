@@ -66,6 +66,9 @@
   --sep: rgba(28,26,20,0.12);
   --tick: #8C877B;
   --panel: rgba(255,255,255,0.9);
+  /* The same colour the blur settles to over the page, for where the blur is
+     too expensive to keep. */
+  --panel-solid: #FEFEFE;
   --panel-text: #5C594F;
   --panel-shadow: 0 1px 3px rgba(28,26,20,0.08);
   --hint: #8C877B;
@@ -113,6 +116,7 @@
   --sep: rgba(255,255,255,0.10);
   --tick: #6E7682;
   --panel: rgba(20,22,29,0.86);
+  --panel-solid: #131519;
   --panel-text: #A2A7B0;
   --panel-shadow: none;
   --hint: #767C87;
@@ -193,18 +197,23 @@ body {
      in — empty, not a hole the incoming wire shows through. */
   --band: var(--band-a);
   --tone: var(--mark);
+  /* Blur radius as well as colour, because a transparent shadow still has to
+     be blurred: on a screenful of people that is a thousand blurs painting
+     nothing. Only the main line actually glows. */
   --halo: transparent;
+  --halo-blur: 0px;
 }
 .node.band-b { --band: var(--band-b); }
-.node.royal { --tone: var(--gold); --halo: var(--glow); }
+.node.royal { --tone: var(--gold); --halo: var(--glow); --halo-blur: 8px; }
 
 .node:hover { background: var(--hover-bg); box-shadow: 0 0 0 1px var(--hover-ring); }
 
 /* Three readable states on one mark: hollow — everything below is shown;
    half-filled — part of the children is hidden; solid — the whole branch is
-   folded away. The halo is carried by every mark, transparent on all but the
-   main line, so that the flash has two shadows to interpolate against either
-   way and comes on smoothly rather than snapping. */
+   folded away. Every mark carries two shadows either way — the flash needs a
+   matching pair to interpolate against, or it snaps on instead of arriving —
+   but on all but the main line the second one has no colour and no blur, so
+   it costs nothing to paint. */
 .node .dot {
   position: absolute; left: -5px; top: 3px;
   width: 10px; height: 10px; box-sizing: border-box;
@@ -212,7 +221,7 @@ body {
   border: 1px solid var(--dim);
   background-clip: padding-box;
   background-color: var(--band);
-  box-shadow: 0 0 0 2px var(--band), 0 0 8px var(--halo);
+  box-shadow: 0 0 0 2px var(--band), 0 0 var(--halo-blur) var(--halo);
 }
 .node.royal .dot,
 .node.badged .dot,
@@ -504,4 +513,24 @@ a.btn { display: inline-block; line-height: normal; }
 
   #zoom { display: none; }
   #zoombar { bottom: 12px; right: 12px; }
+
+  /* A blurred backdrop is re-read and re-blurred every frame the tree moves
+     under it, and here the panel is a bar across the whole width. The solid
+     colour is what the blur was settling to anyway, so nothing looks
+     different — only the tree behind the bar stops being frosted. */
+  .panel {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: var(--panel-solid);
+  }
+
+  /* A thousand wires, and on a screen this size the difference between
+     precise and quick curves is not visible. */
+  #wires path { shape-rendering: optimizeSpeed; }
+
+  /* The wash exists to sit brightest under the generation numerals and fade
+     away below them — and the numerals are hidden here, so all that is left of
+     it is a gradient as tall as the tree, re-painted a slice at a time as the
+     screen moves across it. Flat colour says the same thing on a phone. */
+  #band-rects rect { fill: var(--band-b); }
 }
