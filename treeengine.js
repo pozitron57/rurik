@@ -256,8 +256,13 @@ export function layout(root, o) {
     n._caption = partial
       ? 'показано ' + shownKids(n).length + ' из ' + n.kids.length + ' детей'
       : '';
-    let w = measure(n.name, o.font) + padX * 2 +
-      (showBadge ? o.badgeW + measure(String(hidden), o.font) : 0);
+    // Measured in the face it is drawn in, which is not one face: the main
+    // line is set heavier than everybody else, and the badge is the only
+    // thing on a card set in the mono. `badgePad` is what the badge costs
+    // besides its digits — the flex gap before it and its own padding.
+    const nameFont = o.main && o.main.has(n.id) && o.mainFont ? o.mainFont : o.font;
+    let w = measure(n.name, nameFont) + padX * 2 +
+      (showBadge ? o.badgePad + measure(String(hidden), o.badgeFont || nameFont) : 0);
     if (partial && o.captionFont) {
       w = Math.max(w, measure(n._caption, o.captionFont) + padX * 2);
     }

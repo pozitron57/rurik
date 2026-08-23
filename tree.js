@@ -57,15 +57,17 @@ class Observatory {
     this.ROW_BASE = 21;
     this.ROW_MIN = 16;
     this.opts = {
-      rowH: 21, gapX: 50, padX: 8, badgeW: 28, famGap: 1.35, captionH: 10,
-      // Both faces are the system's own. That is what lets the tree be laid
-      // out and painted the moment the data lands, with nothing to wait for —
-      // the one downloaded face, the mono the chrome is set in, never reaches
-      // the measurer. Measure anything in it and that stops being true, and
-      // the fix is `document.fonts.load` for that one face, not
-      // `document.fonts.ready` for every face on the page.
+      rowH: 21, gapX: 50, padX: 8, famGap: 1.35, captionH: 10,
+      // Every face here is one a card is really drawn in, and the sizes and
+      // weights match treestyle.css exactly. That is the whole point: a name
+      // measured at 500 and drawn at 600 comes out wider than the column it
+      // was measured into. `badgePad` is the flex gap before the badge plus
+      // the badge's own padding — everything it costs except its digits.
+      badgePad: 14,
       font: '500 12px Helvetica, Arial, sans-serif',
+      mainFont: '600 12px Helvetica, Arial, sans-serif',
       captionFont: '400 9px Helvetica, Arial, sans-serif',
+      badgeFont: '500 10px "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace',
     };
     this.hi = [];
     this.shown = new Map();
@@ -85,6 +87,16 @@ class Observatory {
     // The main dynastic line stays lit at all times: Рюрик → … → Иван IV Грозный.
     const ivan = eng.findByName(this.root, 'Иван IV Грозный');
     this.mainLine = new Set(ivan ? eng.lineage(ivan) : []);
+    // The layout has to know who is on it too, to measure them at their weight.
+    this.opts.main = this.mainLine;
+
+    // The badge is drawn in the downloaded mono and its width decides how wide
+    // the column has to be, so that one face must be here before the first
+    // layout. That one, asked for by name — not `fonts.ready`, which is every
+    // face on the page. index.html preloads it, so it is usually here already.
+    if (document.fonts && document.fonts.load) {
+      try { await document.fonts.load('500 10px "JetBrains Mono"'); } catch (e) {}
+    }
 
     let saved = null;
     try { saved = localStorage.getItem('rurik-theme'); } catch (e) {}
