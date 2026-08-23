@@ -62,7 +62,7 @@ class Observatory {
       captionFont: '400 9px Helvetica, Arial, sans-serif',
     };
     this.hi = [];
-    this.byId = new Map();
+    this.shown = new Map();
     this.gens = 2;
     this.gensBtn = document.getElementById('gens');
     this.gensVal = document.getElementById('gens-val');
@@ -119,7 +119,7 @@ class Observatory {
     this.clearFlash();
     const prev = anchorId ? this.state.nodes.find((n) => n.id === anchorId) : null;
     const L = this.measured();
-    this.byId = new Map(L.nodes.map((n) => [n.id, n]));
+    this.shown = new Map(L.nodes.map((n) => [n.id, n]));
     const main = this.mainLine || new Set();
 
     // The layout hands back fresh objects every time and nobody else holds
@@ -151,7 +151,7 @@ class Observatory {
     this.render();
 
     if (prev) {
-      const now = this.byId.get(anchorId);
+      const now = this.shown.get(anchorId);
       if (now) {
         this.cam.x += (prev.x - now.x) * this.cam.s;
         this.cam.y += (prev.y - now.y) * this.cam.s;
@@ -261,7 +261,7 @@ class Observatory {
   // generations are too wide for that, the clicked one goes to the left edge
   // and the rest runs off to the right, which is the way the tree reads.
   reveal(anchorId, fresh) {
-    const anchor = this.byId.get(anchorId);
+    const anchor = this.shown.get(anchorId);
     if (!anchor) return;
     const s = this.cam.s, pad = 24, view = this.viewport().w;
     const left = anchor.x;
@@ -624,11 +624,10 @@ class Observatory {
     this.flashEls = null;
   }
 
-  find(id) {
-    let found = null;
-    eng.walk(this.root, (n) => { if (n.id === id) found = n; });
-    return found;
-  }
+  // Everyone in the dynasty, whether they are on screen or not — as against
+  // `shown`, which is only what the last layout put there. The engine builds
+  // this once at load; walking the tree for it on every hover was the old way.
+  find(id) { return this.root.byId.get(id); }
 
   // ---- hover -----------------------------------------------------------
 
@@ -648,7 +647,7 @@ class Observatory {
   clearHi() { for (const el of this.hi) el.classList.remove('lit'); this.hi = []; }
 
   showTip(card) {
-    const n = this.byId.get(+card.dataset.id);
+    const n = this.shown.get(+card.dataset.id);
     // Nothing to say without dates — the name is already on screen.
     if (!n || !n.years) { this.hideTip(); return; }
     this.tipName.textContent = n.name;
