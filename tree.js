@@ -1,37 +1,27 @@
 // Рюриковичи — the observatory view.
 //
 // treeengine.js decides where every visible person goes; this file paints
-// them, drives the camera, and owns the two palettes. Names and wires are
-// plain DOM/SVG rebuilt on every layout change — a fully open tree is about a
-// thousand rows, which is well inside what one rebuild can afford.
+// them and drives the camera. Names and wires are plain DOM/SVG rebuilt on
+// every layout change — a fully open tree is about a thousand rows, which is
+// well inside what one rebuild can afford, as long as each row carries only
+// what is genuinely its own. Colour is not: it goes out as classes, and
+// treestyle.css turns them into paint.
 
 import * as eng from './treeengine.js';
 
 const ROMAN = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII',
   'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX', 'XXI', 'XXII', 'XXIII', 'XXIV'];
 
-// Two complete palettes. Every colour the tree is painted with has a
-// counterpart here, so nothing falls back to a dark-theme literal when the
-// light theme is on. The chrome's colours live in treestyle.css.
+// Both palettes live in treestyle.css now. What is left here is what still
+// has to be written by hand: the stops of the band gradient, which sit on the
+// SVG, and the label naming the theme the button switches to.
 const THEMES = {
   dark: {
-    bandA: '#0B0C10', bandB: '#101319',
     grad: ['#151A24', '#131822', '#11151E', '#10141C'],
-    ink: '#D7DAE0', dim: '#3B434E', mark: '#C9D1DA', caption: '#666E79',
-    gold: '#E9A93A', royalInk: '#F6DFA8', glow: 'rgba(233,169,58,0.5)',
-    link: '#4E5661', hover: '#FFFFFF', hoverGlow: 'rgba(255,255,255,0.5)',
-    badgeBg: 'rgba(255,255,255,0.08)', royalBadgeBg: 'rgba(233,169,58,0.16)',
     label: 'СВЕТЛАЯ ТЕМА',
   },
   light: {
-    bandA: '#F7F6F3', bandB: '#EDEBE3',
     grad: ['#E2DFD4', '#E7E4DA', '#EEECE5', '#EEECE5'],
-    ink: '#1E1D18', dim: '#BCB7A9', mark: '#4A473E', caption: '#9A958A',
-    gold: '#A9660C', royalInk: '#6F4207', glow: 'rgba(169,102,12,0.32)',
-    // Light ink is already near-black, so a black highlight would be invisible
-    // as a highlight — the light theme signals the lineage with saturation.
-    link: '#9A9484', hover: '#1240B4', hoverGlow: 'rgba(18,64,180,0.45)',
-    badgeBg: 'rgba(28,26,20,0.07)', royalBadgeBg: 'rgba(169,102,12,0.13)',
     label: 'ТЁМНАЯ ТЕМА',
   },
 };
@@ -147,54 +137,34 @@ class Observatory {
     const prev = anchorId ? this.state.nodes.find((n) => n.id === anchorId) : null;
     const L = this.measured();
     this.byId = new Map(L.nodes.map((n) => [n.id, n]));
-    const P = this.pal;
     const main = this.mainLine || new Set();
 
-    const nodes = L.nodes.map((n) => {
-      const royal = main.has(n.id);
-      const tone = royal ? P.gold : P.mark;
-      // The unfilled part of a mark must read as empty, not as a hole the
-      // incoming line shows through — so it is painted in its own band colour.
-      const band = (n.depth - 1) % 2 ? P.bandB : P.bandA;
-      const solid = (c) => 'linear-gradient(' + c + ', ' + c + ')';
-      const fill = n.partial
-        ? 'linear-gradient(90deg, ' + tone + ' 0 50%, ' + band + ' 50% 100%)'
-        : solid(n.badge ? tone : band);
-      return Object.assign({}, n, {
-        ty: n.y - 8,
-        weight: royal ? 600 : 500,
-        color: royal ? P.royalInk : P.ink,
-        capColor: P.caption,
-        dotFill: fill,
-        dotStroke: royal || n.badge || n.partial ? tone : P.dim,
-        ring: band,
-        glow: royal ? P.glow : 'transparent',
-        badgeFg: royal ? P.royalInk : P.mark,
-        badgeBg: royal ? P.royalBadgeBg : P.badgeBg,
-      });
-    });
-
+    // The layout hands back fresh objects every time and nobody else holds
+    // them, so the two things the painting still needs are written straight
+    // onto them rather than into a thousand copies. Everything else a card
+    // used to carry was a colour, and colours are the stylesheet's business.
+    for (const n of L.nodes) {
+      n.ty = n.y - 8;              // a card is 16px tall; hang it on its row
+      n.royal = main.has(n.id);
+    }
+    for (const l of L.links) l.royal = main.has(l.id);
     // Ordinary branches first, the main line painted last so it sits on top.
-    const links = L.links.map((l) => {
-      const royal = main.has(l.id);
-      return Object.assign({}, l, {
-        royal, w: royal ? 1.7 : 1, stroke: royal ? P.gold : P.link,
-      });
-    }).sort((a, b) => (a.royal === b.royal ? 0 : a.royal ? 1 : -1));
+    L.links.sort((a, b) => (a.royal === b.royal ? 0 : a.royal ? 1 : -1));
 
+    // Only every other column is washed; the ones in between are the page's
+    // own ground and need no rect at all.
     const g = this.opts.gapX;
-    const bands = (L.colX || []).map((x, i) => ({
-      x: x - g / 2, w: (L.colW[i] || 0) + g, h: L.height + 56,
-      // Zebra, but every band shares one gradient measured in tree coordinates:
-      // strongest under the generation numbers, dissolving toward the foot of
-      // the tree. Same ramp in every column, so the set reads as one system.
-      fill: i % 2 ? 'url(#bandFade)' : 'transparent',
-    }));
+    const bands = [];
+    (L.colX || []).forEach((x, i) => {
+      if (i % 2) bands.push({ x: x - g / 2, w: (L.colW[i] || 0) + g, h: L.height + 56 });
+    });
     const ticks = (L.colX || []).map((x, i) => ({
       x: x + (L.colW[i] || 0) / 2, label: ROMAN[i + 1] || String(i + 1),
     }));
 
-    this.state = { nodes, links, bands, ticks, width: L.width, height: L.height };
+    this.state = {
+      nodes: L.nodes, links: L.links, bands, ticks, width: L.width, height: L.height,
+    };
     this.render();
 
     if (prev) {
@@ -216,21 +186,24 @@ class Observatory {
     this.bandsSvg.setAttribute('height', s.height);
     this.grad.setAttribute('y2', s.height);
     this.bandRects.innerHTML = s.bands.map((b) =>
-      `<rect x="${b.x}" y="-44" width="${b.w}" height="${b.h}" fill="${b.fill}"></rect>`).join('');
+      `<rect x="${b.x}" y="-44" width="${b.w}" height="${b.h}"></rect>`).join('');
 
     this.wires.setAttribute('width', s.width);
     this.wires.setAttribute('height', s.height);
     this.wires.innerHTML = s.links.map((l) =>
-      `<path d="${l.d}" data-link="${l.id}" fill="none" stroke="${l.stroke}" stroke-width="${l.w}"` +
-      ` shape-rendering="geometricPrecision" vector-effect="non-scaling-stroke"></path>`).join('');
+      `<path d="${l.d}" data-link="${l.id}"${l.royal ? ' class="royal"' : ''}></path>`).join('');
 
+    // What a card carries is what is its own: where it sits, and the four
+    // things about it the stylesheet needs to know. On a fully open tree that
+    // is a third of the markup the inline colours used to cost.
     this.cards.innerHTML = s.nodes.map((n) =>
-      `<div class="node" data-id="${n.id}" style="transform:translate(${n.x}px,${n.ty}px)">` +
-        `<span class="dot" style="border-color:${n.dotStroke};background-image:${n.dotFill};` +
-          `box-shadow:0 0 0 2px ${n.ring}, 0 0 8px ${n.glow}"></span>` +
-        `<span class="name" style="font-weight:${n.weight};color:${n.color}">${esc(n.name)}</span>` +
-        (n.badge ? `<span class="badge" style="color:${n.badgeFg};background:${n.badgeBg}">${esc(n.count)}</span>` : '') +
-        (n.partial ? `<span class="caption" style="color:${n.capColor}">${esc(n.caption)}</span>` : '') +
+      `<div class="node${n.royal ? ' royal' : ''}${(n.depth - 1) % 2 ? ' band-b' : ''}` +
+        `${n.badge ? ' badged' : ''}${n.partial ? ' partial' : ''}" data-id="${n.id}"` +
+        ` style="transform:translate(${n.x}px,${n.ty}px)">` +
+        `<span class="dot"></span>` +
+        `<span class="name">${esc(n.name)}</span>` +
+        (n.badge ? `<span class="badge">${n.count}</span>` : '') +
+        (n.partial ? `<span class="caption">${esc(n.caption)}</span>` : '') +
       `</div>`).join('');
 
     this.ruler.innerHTML = s.ticks.map((t) =>
@@ -681,23 +654,17 @@ class Observatory {
   setHi(id) {
     const n = this.find(id);
     if (!n) return;
-    this.hi = [];
+    // Clearing first rather than dropping the list: a trace that is never put
+    // out stays lit for the life of the card.
+    this.clearHi();
     for (const i of eng.lineage(n)) {
       const card = this.camEl.querySelector('[data-id="' + i + '"]');
-      if (card) {
-        const t = card.querySelector('.name');
-        if (t) { this.hi.push([t, 'color', t.style.color]); t.style.color = this.pal.hover; }
-      }
+      if (card) { card.classList.add('lit'); this.hi.push(card); }
       const path = this.camEl.querySelector('[data-link="' + i + '"]');
-      if (path) {
-        this.hi.push([path, 'stroke', path.style.stroke], [path, 'strokeWidth', path.style.strokeWidth], [path, 'filter', path.style.filter]);
-        path.style.stroke = this.pal.hover;
-        path.style.strokeWidth = '2';
-        path.style.filter = 'drop-shadow(0 0 4px ' + this.pal.hoverGlow + ')';
-      }
+      if (path) { path.classList.add('lit'); this.hi.push(path); }
     }
   }
-  clearHi() { for (const [el, p, v] of this.hi) el.style[p] = v; this.hi = []; }
+  clearHi() { for (const el of this.hi) el.classList.remove('lit'); this.hi = []; }
 
   showTip(card) {
     const n = this.byId.get(+card.dataset.id);

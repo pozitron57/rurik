@@ -20,9 +20,10 @@
 
 /* Рюриковичи — the observatory design.
    Every colour the design uses has a counterpart in both palettes, so nothing
-   falls back to a dark-theme literal when the light theme is on. The chrome
-   lives here; the colours the tree itself is painted with (marks, wires,
-   bands) live in THEMES in tree.js, because they are written per node. */
+   falls back to a dark-theme literal when the light theme is on. Both the
+   chrome and the tree itself are painted from here: a node carries classes for
+   what it *is* — which column it sits in, whether it is on the main line, what
+   its mark has to say — and the cascade decides what that looks like. */
 
 :root {
   color-scheme: light;
@@ -34,6 +35,26 @@
      just changed". */
   --flash: #0C8F79;
   --flash-rgb: 12, 143, 121;
+
+  /* The tree. `band-a`/`band-b` are the zebra of the columns and double as the
+     ground a mark is hollowed out against; `tone` and `dim` are what a mark is
+     drawn in; `trace` is the line back to Рюрик under the pointer. Light ink is
+     already near-black, so a black trace would be invisible as a highlight —
+     the light theme signals the lineage with saturation instead. */
+  --band-a: #F7F6F3;
+  --band-b: #EDEBE3;
+  --ink: #1E1D18;
+  --dim: #BCB7A9;
+  --mark: #4A473E;
+  --caption: #9A958A;
+  --gold: #A9660C;
+  --royal-ink: #6F4207;
+  --glow: rgba(169,102,12,0.32);
+  --wire: #9A9484;
+  --trace: #1240B4;
+  --trace-glow: rgba(18,64,180,0.45);
+  --badge-bg: rgba(28,26,20,0.07);
+  --royal-badge-bg: rgba(169,102,12,0.13);
 
   --bg: #F7F6F3;
   --line: rgba(28,26,20,0.13);
@@ -61,6 +82,21 @@
 
   --flash: #4FE3C1;
   --flash-rgb: 79, 227, 193;
+
+  --band-a: #0B0C10;
+  --band-b: #101319;
+  --ink: #D7DAE0;
+  --dim: #3B434E;
+  --mark: #C9D1DA;
+  --caption: #666E79;
+  --gold: #E9A93A;
+  --royal-ink: #F6DFA8;
+  --glow: rgba(233,169,58,0.5);
+  --wire: #4E5661;
+  --trace: #FFFFFF;
+  --trace-glow: rgba(255,255,255,0.5);
+  --badge-bg: rgba(255,255,255,0.08);
+  --royal-badge-bg: rgba(233,169,58,0.16);
 
   --bg: #0B0C10;
   --line: rgba(255,255,255,0.09);
@@ -106,6 +142,23 @@ body {
 #bands, #wires { position: absolute; top: 0; left: 0; overflow: visible; pointer-events: none; }
 #cards { position: absolute; top: 0; left: 0; }
 
+/* Every other column is washed with one gradient measured in tree coordinates —
+   strongest under the generation numerals, dissolving toward the foot of the
+   tree — so the whole set reads as one system rather than as stripes. The
+   columns in between are left unpainted and get no rect at all. */
+#band-rects rect { fill: url(#bandFade); }
+
+/* Geometry is written per path; paint is not. `non-scaling-stroke` is what
+   keeps a hairline a hairline at any zoom. */
+#wires path {
+  fill: none;
+  stroke: var(--wire);
+  stroke-width: 1;
+  shape-rendering: geometricPrecision;
+  vector-effect: non-scaling-stroke;
+}
+#wires path.royal { stroke: var(--gold); stroke-width: 1.7; }
+
 /* ---- a person ---------------------------------------------------------- */
 
 .node {
@@ -116,35 +169,65 @@ body {
   border-radius: 3px;
   cursor: pointer;
   background: transparent;
+
+  /* What the rest of the card reads off. `band` is the ground this column is
+     washed in, which is also what the unfilled part of a mark must be painted
+     in — empty, not a hole the incoming wire shows through. */
+  --band: var(--band-a);
+  --tone: var(--mark);
+  --halo: transparent;
 }
+.node.band-b { --band: var(--band-b); }
+.node.royal { --tone: var(--gold); --halo: var(--glow); }
+
 .node:hover { background: var(--hover-bg); box-shadow: 0 0 0 1px var(--hover-ring); }
 
 /* Three readable states on one mark: hollow — everything below is shown;
    half-filled — part of the children is hidden; solid — the whole branch is
-   folded away. The fill is written per node in tree.js. */
+   folded away. The halo is carried by every mark, transparent on all but the
+   main line, so that the flash has two shadows to interpolate against either
+   way and comes on smoothly rather than snapping. */
 .node .dot {
   position: absolute; left: -5px; top: 3px;
   width: 10px; height: 10px; box-sizing: border-box;
   border-radius: 50%;
-  border: 1px solid transparent;
+  border: 1px solid var(--dim);
   background-clip: padding-box;
+  background-color: var(--band);
+  box-shadow: 0 0 0 2px var(--band), 0 0 8px var(--halo);
 }
-.node .name { font-size: 12px; letter-spacing: -0.005em; white-space: nowrap; }
+.node.royal .dot,
+.node.badged .dot,
+.node.partial .dot { border-color: var(--tone); }
+.node.badged .dot { background-color: var(--tone); }
+.node.partial .dot {
+  background-image: linear-gradient(90deg, var(--tone) 0 50%, var(--band) 50% 100%);
+}
+
+.node .name {
+  font-size: 12px; letter-spacing: -0.005em; white-space: nowrap;
+  font-weight: 500; color: var(--ink);
+}
+.node.royal .name { font-weight: 600; color: var(--royal-ink); }
 .node .badge {
   font-family: var(--mono); font-size: 10px; font-weight: 500;
   border-radius: 3px; padding: 1px 4px; letter-spacing: 0;
+  color: var(--mark); background: var(--badge-bg);
 }
+.node.royal .badge { color: var(--royal-ink); background: var(--royal-badge-bg); }
 .node .caption {
   position: absolute; left: 8px; top: 15px;
   font-size: 9px; letter-spacing: 0.01em; white-space: nowrap;
   pointer-events: none;
+  color: var(--caption);
 }
 
 /* The flash: fast in, slow out. `flashing` carries the slow transition for the
    whole life of the effect and nothing else, so hover stays instant; `flash`
    adds the colour and, while it is on, speeds the transition up, so the light
    comes on at once and fades out at leisure. The `!important`s are aimed at
-   the per-node inline colours the layout writes, not at other rules. */
+   the main line's own colours, which are set on the same elements by rules of
+   equal weight; without them a lit Рюрикович would stay gold. */
 .node.flashing { transition: background 760ms var(--ease), box-shadow 760ms var(--ease); }
 .node.flashing .name { transition: color 760ms var(--ease); }
 .node.flashing .caption { transition: color 760ms var(--ease); }
@@ -160,9 +243,8 @@ body {
 .node.flash .caption { transition-duration: 120ms; color: var(--flash) !important; }
 
 /* A wire is named after the node it carries, so lighting it alongside says
-   not just what appeared but what it grew out of. Stroke and width are
-   presentation attributes, which any rule outranks — no !important needed,
-   and hovering during a flash still wins with its inline style. */
+   not just what appeared but what it grew out of. This sits after the resting
+   paint above and so outranks it at equal weight, on source order alone. */
 #wires path.flashing {
   transition: stroke 760ms var(--ease), stroke-width 760ms var(--ease), filter 760ms var(--ease);
 }
@@ -177,6 +259,18 @@ body {
   transform: scale(1.9);
   border-color: var(--flash) !important;
   box-shadow: 0 0 0 3px rgba(var(--flash-rgb), 0.3), 0 0 16px 3px rgba(var(--flash-rgb), 0.55) !important;
+}
+
+/* The line back to Рюрик, traced under the pointer. Last of the three states a
+   name can be in — resting, flashing, traced — and so it wins over the main
+   line's gold on source order. Deliberately not over a flash, which shouts
+   with `!important`: what just appeared matters more than what is hovered,
+   and a wire lights up either way. */
+.node.lit .name { color: var(--trace); }
+#wires path.lit {
+  stroke: var(--trace);
+  stroke-width: 2;
+  filter: drop-shadow(0 0 4px var(--trace-glow));
 }
 
 /* ---- generation ruler -------------------------------------------------- */
