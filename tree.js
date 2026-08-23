@@ -45,6 +45,13 @@ const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)');
 const ENT = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' };
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ENT[c]);
 
+const span = (cls, text) => {
+  const el = document.createElement('span');
+  el.className = cls;
+  el.textContent = text;
+  return el;
+};
+
 class Observatory {
   constructor() {
     this.stage = document.getElementById('stage');
@@ -86,6 +93,10 @@ class Observatory {
     };
     this.hi = [];
     this.shown = new Map();
+    // id -> the card element standing for that person right now. Cards survive
+    // a relayout, so this is the truth about what is on screen, and it is what
+    // everything that needs an element by id reads instead of searching for it.
+    this.painted = new Map();
     this.gens = 2;
     this.gensBtn = document.getElementById('gens');
     this.gensVal = document.getElementById('gens-val');
@@ -238,18 +249,7 @@ class Observatory {
     this.wires.innerHTML = s.links.map((l) =>
       `<path d="${l.d}" data-link="${l.id}"${l.royal ? ' class="royal"' : ''}></path>`).join('');
 
-    // What a card carries is what is its own: where it sits, and the four
-    // things about it the stylesheet needs to know. On a fully open tree that
-    // is a third of the markup the inline colours used to cost.
-    this.cards.innerHTML = s.nodes.map((n) =>
-      `<div class="node${n.royal ? ' royal' : ''}${(n.depth - 1) % 2 ? ' band-b' : ''}` +
-        `${n.badge ? ' badged' : ''}${n.partial ? ' partial' : ''}" data-id="${n.id}"` +
-        ` style="transform:translate(${n.x}px,${n.ty}px)">` +
-        `<span class="dot"></span>` +
-        `<span class="name">${esc(n.name)}</span>` +
-        (n.badge ? `<span class="badge">${n.count}</span>` : '') +
-        (n.partial ? `<span class="caption">${esc(n.caption)}</span>` : '') +
-      `</div>`).join('');
+    this.paintCards(s.nodes);
 
     this.ruler.innerHTML = s.ticks.map((t) =>
       `<span class="tick" style="left:${t.x}px">${t.label}</span>`).join('');
@@ -257,6 +257,89 @@ class Observatory {
     this.shownN.textContent = s.nodes.length;
     // root.total counts everyone below the synthetic root, which is everyone.
     this.shownAll.textContent = this.root.total;
+  }
+
+  // ---- cards -----------------------------------------------------------
+
+  // Opening a branch usually changes a handful of people and moves everybody
+  // below them. Rebuilding all thousand cards to show three costs the same as
+  // building the tree from nothing, which is what it used to do. So whoever
+  // stays, stays: they are moved, and told only what actually changed about
+  // them. Only genuinely new people are parsed — all of them in one string,
+  // because for building many elements at once nothing beats the parser.
+  //
+  // Nobody overlaps, so the order the cards sit in the document says nothing
+  // and new ones can simply go on the end.
+  paintCards(nodes) {
+    const live = this.painted;
+    const fresh = [];
+    for (const n of nodes) {
+      const el = live.get(n.id);
+      if (el) this.recard(el, n);
+      else fresh.push(n);
+    }
+
+    if (fresh.length) {
+      const tpl = document.createElement('template');
+      tpl.innerHTML = fresh.map((n) => this.cardHTML(n)).join('');
+      let i = 0;
+      for (const el of tpl.content.children) {
+        const n = fresh[i++];
+        el._was = n;
+        // A card carries at most one of the two, and the layout guarantees
+        // never both, so whichever it has is its last child.
+        el._badge = n.badge ? el.lastElementChild : null;
+        el._caption = n.partial ? el.lastElementChild : null;
+        live.set(n.id, el);
+      }
+      this.cards.appendChild(tpl.content);
+    }
+
+    if (live.size > nodes.length) {
+      const on = new Set(nodes.map((n) => n.id));
+      for (const [id, el] of live) {
+        if (!on.has(id)) { el.remove(); live.delete(id); }
+      }
+    }
+  }
+
+  // What a card carries is what is its own: where it sits, and the four things
+  // about it the stylesheet needs to know. Everything else is colour, and
+  // colour is treestyle.css's business.
+  cardHTML(n) {
+    return `<div class="node${n.royal ? ' royal' : ''}${(n.depth - 1) % 2 ? ' band-b' : ''}` +
+      `${n.badge ? ' badged' : ''}${n.partial ? ' partial' : ''}" data-id="${n.id}"` +
+      ` style="transform:translate(${n.x}px,${n.ty}px)">` +
+      `<span class="dot"></span>` +
+      `<span class="name">${esc(n.name)}</span>` +
+      (n.badge ? `<span class="badge">${n.count}</span>` : '') +
+      (n.partial ? `<span class="caption">${esc(n.caption)}</span>` : '') +
+    `</div>`;
+  }
+
+  // Somebody who was already on screen. A name never changes and neither does
+  // the column or the main line, so the only things that can have moved are
+  // the position and what the mark has to say.
+  recard(el, n) {
+    const was = el._was;
+    if (was.x !== n.x || was.ty !== n.ty) {
+      el.style.transform = 'translate(' + n.x + 'px,' + n.ty + 'px)';
+    }
+    if (was.badge !== n.badge) {
+      el.classList.toggle('badged', n.badge);
+      if (n.badge) el._badge = el.appendChild(span('badge', n.count));
+      else if (el._badge) { el._badge.remove(); el._badge = null; }
+    } else if (n.badge && was.count !== n.count) {
+      el._badge.textContent = n.count;
+    }
+    if (was.partial !== n.partial) {
+      el.classList.toggle('partial', n.partial);
+      if (n.partial) el._caption = el.appendChild(span('caption', n.caption));
+      else if (el._caption) { el._caption.remove(); el._caption = null; }
+    } else if (n.partial && was.caption !== n.caption) {
+      el._caption.textContent = n.caption;
+    }
+    el._was = n;
   }
 
   // ---- camera ----------------------------------------------------------
@@ -685,7 +768,7 @@ class Observatory {
     this.hideTip();
     this.relayout(parentId, () => {
       this.applyCam();
-      const target = this.camEl.querySelector('[data-id="' + parentId + '"]');
+      const target = this.painted.get(parentId);
       if (target) {
         const to = target.getBoundingClientRect();
         const s = this.cam.s;
@@ -712,7 +795,7 @@ class Observatory {
     this.clearFlash();
     const els = [];
     for (const id of (Array.isArray(ids) ? ids : [ids])) {
-      const card = this.camEl.querySelector('[data-id="' + id + '"]');
+      const card = this.painted.get(id);
       if (card) els.push(card);
       // A wire is named after the node it carries, so it is new exactly when
       // that node is. After a fold nothing new arrived, and the parent's own
@@ -752,7 +835,7 @@ class Observatory {
     // out stays lit for the life of the card.
     this.clearHi();
     for (const i of eng.lineage(n)) {
-      const card = this.camEl.querySelector('[data-id="' + i + '"]');
+      const card = this.painted.get(i);
       if (card) { card.classList.add('lit'); this.hi.push(card); }
       const path = this.camEl.querySelector('[data-link="' + i + '"]');
       if (path) { path.classList.add('lit'); this.hi.push(path); }
