@@ -27,6 +27,13 @@
 :root {
   color-scheme: dark;
   --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Used nowhere else in either palette — not the resting ink, not the gold of
+     the main line, not the hover — so a lit node can only mean "this is what
+     just changed". */
+  --flash: #4FE3C1;
+  --flash-rgb: 79, 227, 193;
 
   --bg: #0B0C10;
   --line: rgba(255,255,255,0.09);
@@ -50,6 +57,9 @@
 
 :root[data-theme="light"] {
   color-scheme: light;
+
+  --flash: #0C8F79;
+  --flash-rgb: 12, 143, 121;
 
   --bg: #F7F6F3;
   --line: rgba(28,26,20,0.13);
@@ -126,6 +136,35 @@ body {
   position: absolute; left: 8px; top: 15px;
   font-size: 9px; letter-spacing: 0.01em; white-space: nowrap;
   pointer-events: none;
+}
+
+/* The flash: fast in, slow out. `flashing` carries the slow transition for the
+   whole life of the effect and nothing else, so hover stays instant; `flash`
+   adds the colour and, while it is on, speeds the transition up, so the light
+   comes on at once and fades out at leisure. The `!important`s are aimed at
+   the per-node inline colours the layout writes, not at other rules. */
+.node.flashing { transition: background 760ms var(--ease), box-shadow 760ms var(--ease); }
+.node.flashing .name { transition: color 760ms var(--ease), font-weight 760ms var(--ease); }
+.node.flashing .caption { transition: color 760ms var(--ease); }
+.node.flashing .dot {
+  transition: transform 760ms var(--ease), box-shadow 760ms var(--ease), border-color 760ms var(--ease);
+}
+.node.flash {
+  transition-duration: 120ms;
+  background: rgba(var(--flash-rgb), 0.14);
+  box-shadow: 0 0 0 1px rgba(var(--flash-rgb), 0.65), 0 0 16px rgba(var(--flash-rgb), 0.28);
+}
+.node.flash .name {
+  transition-duration: 120ms;
+  color: var(--flash) !important;
+  font-weight: 700 !important;
+}
+.node.flash .caption { transition-duration: 120ms; color: var(--flash) !important; }
+.node.flash .dot {
+  transition-duration: 120ms;
+  transform: scale(1.9);
+  border-color: var(--flash) !important;
+  box-shadow: 0 0 0 3px rgba(var(--flash-rgb), 0.3), 0 0 16px 3px rgba(var(--flash-rgb), 0.55) !important;
 }
 
 /* ---- generation ruler -------------------------------------------------- */

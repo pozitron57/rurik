@@ -21,7 +21,6 @@ const THEMES = {
     gold: '#E9A93A', royalInk: '#F6DFA8', glow: 'rgba(233,169,58,0.5)',
     link: '#4E5661', hover: '#FFFFFF', hoverGlow: 'rgba(255,255,255,0.5)',
     badgeBg: 'rgba(255,255,255,0.08)', royalBadgeBg: 'rgba(233,169,58,0.16)',
-    flash: '#4FE3C1', flashRgb: '79,227,193',
     label: 'СВЕТЛАЯ ТЕМА',
   },
   light: {
@@ -33,7 +32,6 @@ const THEMES = {
     // as a highlight — the light theme signals the lineage with saturation.
     link: '#9A9484', hover: '#1240B4', hoverGlow: 'rgba(18,64,180,0.45)',
     badgeBg: 'rgba(28,26,20,0.07)', royalBadgeBg: 'rgba(169,102,12,0.13)',
-    flash: '#0C8F79', flashRgb: '12,143,121',
     label: 'ТЁМНАЯ ТЕМА',
   },
 };
@@ -132,6 +130,8 @@ class Observatory {
   }
 
   relayout(anchorId, then) {
+    // Cards are rebuilt below, so anything mid-flash is about to be detached.
+    this.clearFlash();
     const prev = anchorId ? this.state.nodes.find((n) => n.id === anchorId) : null;
     const L = this.measured();
     this.byId = new Map(L.nodes.map((n) => [n.id, n]));
@@ -282,6 +282,28 @@ class Observatory {
     this.cam.x = Math.max(30, (r.w - w * s) / 2);
     this.cam.y = 40 + Math.max(0, (r.h - 80 - h * s) / 2);
     this.applyCam();
+  }
+
+  // Slides the camera sideways — never zooms, the scale is the reader's to
+  // set — so that what a click just opened is on screen. When the new
+  // generations are too wide for that, the clicked one goes to the left edge
+  // and the rest runs off to the right, which is the way the tree reads.
+  reveal(anchorId, fresh) {
+    const anchor = this.byId.get(anchorId);
+    if (!anchor) return;
+    const s = this.cam.s, pad = 24, view = this.viewport().w;
+    const left = anchor.x;
+    let right = left;
+    for (const v of fresh) right = Math.max(right, v.x + v.w);
+    if ((right - left) * s > view - pad * 2) {
+      this.cam.x = pad - left * s;
+      return;
+    }
+    // It fits, so move as little as possible to bring the whole of it on.
+    let x = this.cam.x;
+    if (left * s + x < pad) x = pad - left * s;
+    if (right * s + x > view - pad) x = view - pad - right * s;
+    this.cam.x = x;
   }
 
   zoomBy(f, cx, cy) {
@@ -488,8 +510,16 @@ class Observatory {
       if (!card) return;
       const n = this.find(+card.dataset.id);
       if (!n) return;
+      const before = new Set(this.state.nodes.map((v) => v.id));
       eng.toggle(n, e.altKey || e.shiftKey ? MAX_GENS : this.gens);
-      this.relayout(n.id);
+      this.relayout(n.id, () => {
+        // A fold leaves nothing new to look at; only an opening moves the
+        // camera and lights anything up.
+        const fresh = this.state.nodes.filter((v) => !before.has(v.id));
+        if (fresh.length) this.reveal(n.id, fresh);
+        this.applyCam();
+        if (fresh.length) this.flash(fresh.map((v) => v.id));
+      });
     });
     st.addEventListener('contextmenu', (e) => {
       const card = e.target.closest && e.target.closest('[data-id]');
@@ -567,58 +597,32 @@ class Observatory {
     });
   }
 
-  restoreFlash() {
-    (this.flashTimers || []).forEach(clearTimeout);
-    this.flashTimers = [];
-    (this.flashSaved || []).forEach(([el, css]) => { el.style.cssText = css; });
-    this.flashSaved = null;
+  // Lights a node, or a whole crop of them, in the flash colour: after a fold,
+  // the parent that swallowed the branch; after an opening, everything that
+  // just appeared. Classes rather than inline styles, so opening a
+  // thousand-node branch costs two class writes per node, not a stylesheet.
+  flash(ids) {
+    this.clearFlash();
+    const els = [];
+    for (const id of (Array.isArray(ids) ? ids : [ids])) {
+      const card = this.camEl.querySelector('[data-id="' + id + '"]');
+      if (card) els.push(card);
+    }
+    if (!els.length) return;
+    for (const el of els) el.classList.add('flashing', 'flash');
+    this.flashEls = els;
+    this.flashTimers = [setTimeout(() => {
+      for (const el of els) el.classList.remove('flash');
+      this.flashTimers.push(setTimeout(() => this.clearFlash(), 880));
+    }, 520)];
   }
 
-  flash(id) {
-    const card = this.camEl.querySelector('[data-id="' + id + '"]');
-    if (!card) return;
-    // A second hide must not cancel the first flash mid-way and leave it lit:
-    // cancelling the pending restore without running it strands those styles
-    // forever. Every flash ends in a restore, interrupted or not.
-    this.restoreFlash();
-    // The flash colour is used nowhere else in either palette — not the resting
-    // ink, not the gold of the main line, not the white of hover — so it can
-    // only mean "the child you just hid went in here".
-    const name = card.querySelector('.name');
-    const cap = card.querySelector('.caption');
-    const dot = card.querySelector('.dot');
-    // Snapshot whole declarations, not single properties: the dot's fill is a
-    // gradient plus background-clip, and restoring those piecemeal loses the
-    // clip and blanks the mark.
-    const saved = [card, name, cap, dot].filter(Boolean).map((el) => [el, el.style.cssText]);
-    const put = (el, prop, val) => { if (el) el.style[prop] = val; };
-    const ease = (ms) => ms + 'ms cubic-bezier(0.4, 0, 0.2, 1)';
-
-    put(card, 'transition', 'background ' + ease(120) + ', box-shadow ' + ease(120));
-    const F = this.pal.flash, rgb = this.pal.flashRgb;
-    put(card, 'background', 'rgba(' + rgb + ',0.14)');
-    put(card, 'boxShadow', '0 0 0 1px rgba(' + rgb + ',0.65), 0 0 16px rgba(' + rgb + ',0.28)');
-    put(name, 'transition', 'color ' + ease(120) + ', font-weight ' + ease(120));
-    put(name, 'color', F);
-    put(name, 'fontWeight', '700');
-    put(cap, 'transition', 'color ' + ease(120));
-    put(cap, 'color', F);
-    put(dot, 'transition', 'transform ' + ease(120) + ', box-shadow ' + ease(120) + ', background ' + ease(120) + ', border-color ' + ease(120));
-    put(dot, 'transform', 'scale(1.9)');
-    put(dot, 'borderColor', F);
-    put(dot, 'boxShadow', '0 0 0 3px rgba(' + rgb + ',0.3), 0 0 16px 3px rgba(' + rgb + ',0.55)');
-
-    this.flashSaved = saved;
-    this.flashTimers = [
-      setTimeout(() => {
-        saved.forEach(([el, css]) => {
-          const t = el.style.transition;
-          el.style.cssText = css;
-          el.style.transition = t.replace(/120ms/g, '760ms');
-        });
-        this.flashTimers.push(setTimeout(() => this.restoreFlash(), 880));
-      }, 520),
-    ];
+  // A second flash must not cancel the first one mid-way and strand it lit.
+  clearFlash() {
+    (this.flashTimers || []).forEach(clearTimeout);
+    this.flashTimers = [];
+    for (const el of this.flashEls || []) el.classList.remove('flash', 'flashing');
+    this.flashEls = null;
   }
 
   find(id) {

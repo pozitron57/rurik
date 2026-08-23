@@ -47,6 +47,7 @@ The file `source.data` contains the list of the dynasty members. One tab (4 spac
 - Dark and light themes, remembered between visits
 - A click opens one generation, alt/shift-click twenty, a double click the whole branch
 - A right click (long press on a touch screen) hides a person inside the parent, which lights up to say where they went
+- Opening a node lights up everything that just appeared, in that same colour, and slides the camera sideways — never zooming — to bring it on screen; when the new generations are too wide to fit, the clicked one goes to the left edge
 - A generation ruler in Roman numerals above the columns, thinned out as you zoom away
 - The main dynastic line — Рюрик → … → Иван IV Грозный — stays lit at all times; hovering anyone else traces their own line back to Рюрик
 - Pop-ups with the info about a person on mouse hover: years, generation, number of descendants
