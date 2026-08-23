@@ -14,9 +14,12 @@ The goal of the project is to create the complete family tree for the Rurik dyna
 
 The page has no framework and no build step. `treeengine.js` is a
 Reingold–Tilford/Buchheim tidy layout over the currently visible subtree, which
-guarantees that labels can never collide; `tree.js` paints the result, drives
-the camera, and owns the two palettes; `treestyle.css` holds the chrome and the
-theme variables. The earlier [D3.js](http://d3js.org/) collapsible tree
+guarantees that labels can never collide; `tree.js` paints the result and drives
+the camera; `treestyle.css` holds both palettes and every colour on the page.
+A card carries classes for what it *is* — which column it sits in, whether it is
+on the main line, what its mark has to say — and the stylesheet decides what
+that looks like, which is why switching themes writes one attribute and rebuilds
+nothing. The earlier [D3.js](http://d3js.org/) collapsible tree
 [template](http://bl.ocks.org/robschmuecker/7880033) it replaced is still in the
 repository as `d3.js` and `dndTree.js`, unused.
 

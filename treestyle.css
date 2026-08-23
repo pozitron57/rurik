@@ -43,6 +43,10 @@
      the light theme signals the lineage with saturation instead. */
   --band-a: #F7F6F3;
   --band-b: #EDEBE3;
+  --grad-1: #E2DFD4;
+  --grad-2: #E7E4DA;
+  --grad-3: #EEECE5;
+  --grad-4: #EEECE5;
   --ink: #1E1D18;
   --dim: #BCB7A9;
   --mark: #4A473E;
@@ -85,6 +89,10 @@
 
   --band-a: #0B0C10;
   --band-b: #101319;
+  --grad-1: #151A24;
+  --grad-2: #131822;
+  --grad-3: #11151E;
+  --grad-4: #10141C;
   --ink: #D7DAE0;
   --dim: #3B434E;
   --mark: #C9D1DA;
@@ -147,6 +155,14 @@ body {
    tree — so the whole set reads as one system rather than as stripes. The
    columns in between are left unpainted and get no rect at all. */
 #band-rects rect { fill: url(#bandFade); }
+
+/* `stop-color` is an ordinary CSS property, so the wash can be themed from
+   here like everything else and nobody has to reach into the SVG to repaint
+   it. The ramp itself — the offsets and opacities — stays in the markup. */
+#bandFade stop:nth-child(1) { stop-color: var(--grad-1); }
+#bandFade stop:nth-child(2) { stop-color: var(--grad-2); }
+#bandFade stop:nth-child(3) { stop-color: var(--grad-3); }
+#bandFade stop:nth-child(4) { stop-color: var(--grad-4); }
 
 /* Geometry is written per path; paint is not. `non-scaling-stroke` is what
    keeps a hairline a hairline at any zoom. */
@@ -303,6 +319,12 @@ body {
 .bar-scroll { display: contents; }
 
 #btn-theme { display: inline-flex; align-items: center; gap: 5px; }
+/* The button names the theme it switches to, which is also what the icon on a
+   phone shows. Both labels are in the markup and the stylesheet picks one, so
+   the switch has nothing to write. */
+.if-dark { display: none; }
+:root[data-theme="dark"] .if-light { display: none; }
+:root[data-theme="dark"] .if-dark { display: inline; }
 .theme-icon { display: none; width: 13px; height: 13px; flex: none; fill: currentColor; }
 .btn {
   border: 0; background: transparent;

@@ -12,20 +12,6 @@ import * as eng from './treeengine.js';
 const ROMAN = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII',
   'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX', 'XXI', 'XXII', 'XXIII', 'XXIV'];
 
-// Both palettes live in treestyle.css now. What is left here is what still
-// has to be written by hand: the stops of the band gradient, which sit on the
-// SVG, and the label naming the theme the button switches to.
-const THEMES = {
-  dark: {
-    grad: ['#151A24', '#131822', '#11151E', '#10141C'],
-    label: 'СВЕТЛАЯ ТЕМА',
-  },
-  light: {
-    grad: ['#E2DFD4', '#E7E4DA', '#EEECE5', '#EEECE5'],
-    label: 'ТЁМНАЯ ТЕМА',
-  },
-};
-
 // Twenty is both the longest run the picker offers and what shift-click opens,
 // and no branch of the dynasty is deeper than that.
 const MAX_GENS = 20;
@@ -51,13 +37,11 @@ class Observatory {
     this.bandsSvg = document.getElementById('bands');
     this.bandRects = document.getElementById('band-rects');
     this.grad = document.getElementById('bandFade');
-    this.stops = [...this.grad.querySelectorAll('stop')];
     this.wires = document.getElementById('wires');
     this.cards = document.getElementById('cards');
     this.ruler = document.getElementById('ruler');
     this.zoomLabel = document.getElementById('zoom');
     this.themeBtn = document.getElementById('btn-theme');
-    this.themeLabel = document.getElementById('theme-label');
     this.toolbar = document.getElementById('toolbar');
     this.hintPanel = document.getElementById('hint');
     this.gensCtl = document.getElementById('gens-ctl');
@@ -86,7 +70,6 @@ class Observatory {
     this.gensWrap = document.querySelector('.gens-wrap');
     this.gensWord = document.getElementById('gens-word');
     this.themeName = 'light';
-    this.pal = THEMES.light;
   }
 
   async start() {
@@ -101,7 +84,7 @@ class Observatory {
 
     let saved = null;
     try { saved = localStorage.getItem('rurik-theme'); } catch (e) {}
-    if (saved && THEMES[saved]) { this.themeName = saved; this.pal = THEMES[saved]; }
+    if (saved === 'light' || saved === 'dark') this.themeName = saved;
     let savedGens = null;
     try { savedGens = parseInt(localStorage.getItem('rurik-gens'), 10); } catch (e) {}
     this.buildGens(savedGens);
@@ -309,19 +292,17 @@ class Observatory {
 
   // ---- theme -----------------------------------------------------------
 
+  // One attribute, and the stylesheet repaints the lot: marks, names, wires,
+  // the wash behind the columns, the word on the button. Nothing is measured
+  // and nothing is rebuilt — a colour cannot move anybody.
   setTheme(name) {
     this.themeName = name;
-    this.pal = THEMES[name];
     try { localStorage.setItem('rurik-theme', name); } catch (e) {}
     this.applyTheme();
-    this.relayout();
   }
 
   applyTheme() {
-    const P = this.pal;
     document.documentElement.setAttribute('data-theme', this.themeName);
-    this.stops.forEach((s, i) => s.setAttribute('stop-color', P.grad[i] || P.grad[0]));
-    this.themeLabel.textContent = P.label;
   }
 
   // ---- how many generations a click opens ------------------------------
