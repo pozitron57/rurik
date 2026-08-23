@@ -18,7 +18,7 @@ function measurer(font) {
 // count, a caption — so the map cannot grow without end.
 const _widths = new Map();
 
-export function measure(text, font) {
+function measure(text, font) {
   const key = font + '\u0000' + text;
   let w = _widths.get(key);
   if (w === undefined) _widths.set(key, w = measurer(font).measureText(text).width);
@@ -34,7 +34,9 @@ export async function loadTree(url) {
   return root;
 }
 
-// Drop the source file's invisible spacer rows; splice up children of any that had some.
+// Drop the source file's spacer rows — a row with no name and nobody under it,
+// left from the drawing this page replaced. A spacer that does have children
+// stays, and the file holds exactly one: the root everybody hangs from.
 function adopt(src, parent, depth) {
   const n = {
     id: ++_uid,
@@ -78,25 +80,19 @@ export function findByName(root, name) {
   return f;
 }
 
-export function walk(n, fn) {
+function walk(n, fn) {
   fn(n);
   for (const k of n.kids) walk(k, fn);
 }
 
-export function shownKids(n) {
+function shownKids(n) {
   return n.open ? n.kids.filter(k => !k.hidden) : [];
 }
 
-export function hiddenCount(n) {
+// Everybody below n who is not on screen: a folded child takes their whole
+// branch with them, an open one costs one and is descended into.
+function hiddenCount(n) {
   let c = 0;
-  const rec = (m) => {
-    for (const k of m.kids) {
-      if (k.hidden || !m.open) { c += 1 + k.total; }
-      else { c++; rec(k); }
-    }
-  };
-  // count descendants not currently on screen
-  c = 0;
   const stack = [n];
   while (stack.length) {
     const m = stack.pop();
@@ -110,7 +106,7 @@ export function hiddenCount(n) {
 
 // Partial means *some* children are on screen and some are not. Hiding the
 // last visible child is a fold, not a partial view, so it reads as one.
-export function isPartial(n) {
+function isPartial(n) {
   if (!n.kids.length || !n.open) return false;
   return n.kids.some(k => k.hidden) && n.kids.some(k => !k.hidden);
 }
