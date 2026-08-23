@@ -518,7 +518,13 @@ class Observatory {
         const fresh = this.state.nodes.filter((v) => !before.has(v.id));
         if (fresh.length) this.reveal(n.id, fresh);
         this.applyCam();
-        if (fresh.length) this.flash(fresh.map((v) => v.id), true);
+        // Only the generation that answers the click is lit, not everything
+        // under it. A twenty-generation opening puts a thousand glowing nodes
+        // on screen, none of which the compositor can help with, and the row
+        // of children already says where the new growth hangs from. The camera
+        // still takes the whole opening into account.
+        const kids = fresh.filter((v) => v.node && v.node.parent === n);
+        if (kids.length) this.flash(kids.map((v) => v.id), true);
       });
     });
     st.addEventListener('contextmenu', (e) => {
