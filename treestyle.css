@@ -25,39 +25,13 @@
    bands) live in THEMES in tree.js, because they are written per node. */
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
   --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
   --ease: cubic-bezier(0.4, 0, 0.2, 1);
 
   /* Used nowhere else in either palette — not the resting ink, not the gold of
      the main line, not the hover — so a lit node can only mean "this is what
      just changed". */
-  --flash: #4FE3C1;
-  --flash-rgb: 79, 227, 193;
-
-  --bg: #0B0C10;
-  --line: rgba(255,255,255,0.09);
-  --sep: rgba(255,255,255,0.10);
-  --tick: #6E7682;
-  --panel: rgba(20,22,29,0.86);
-  --panel-text: #A2A7B0;
-  --panel-shadow: none;
-  --hint: #767C87;
-  --zoom-text: #8A9099;
-  --tip-bg: #EDEAE4;
-  --tip-ink: #0B0C10;
-  --tip-meta: #5A5F68;
-  --tip-shadow: 0 10px 30px rgba(0,0,0,0.5);
-
-  /* Neutral grey: reads as a highlight over either palette. */
-  --hover-bg: rgba(128,132,140,0.16);
-  --hover-ring: rgba(128,132,140,0.42);
-  --btn-hover: rgba(128,132,140,0.20);
-}
-
-:root[data-theme="light"] {
-  color-scheme: light;
-
   --flash: #0C8F79;
   --flash-rgb: 12, 143, 121;
 
@@ -74,7 +48,35 @@
   --tip-ink: #F7F6F3;
   --tip-meta: #A39D90;
   --tip-shadow: 0 10px 26px rgba(28,26,20,0.22);
+
+  /* Neutral grey: reads as a highlight over either palette. */
+  --hover-bg: rgba(128,132,140,0.16);
+  --hover-ring: rgba(128,132,140,0.42);
+  --btn-hover: rgba(128,132,140,0.20);
 }
+
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --flash: #4FE3C1;
+  --flash-rgb: 79, 227, 193;
+
+  --bg: #0B0C10;
+  --line: rgba(255,255,255,0.09);
+  --sep: rgba(255,255,255,0.10);
+  --tick: #6E7682;
+  --panel: rgba(20,22,29,0.86);
+  --panel-text: #A2A7B0;
+  --panel-shadow: none;
+  --hint: #767C87;
+  --zoom-text: #8A9099;
+  --tip-bg: #EDEAE4;
+  --tip-ink: #0B0C10;
+  --tip-meta: #5A5F68;
+  --tip-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
 
 html, body {
   margin: 0; padding: 0; height: 100%;

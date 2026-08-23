@@ -78,14 +78,14 @@ class Observatory {
     };
     this.hi = [];
     this.byId = new Map();
-    this.gens = 1;
+    this.gens = 2;
     this.gensBtn = document.getElementById('gens');
     this.gensVal = document.getElementById('gens-val');
     this.gensList = document.getElementById('gens-list');
     this.gensWrap = document.querySelector('.gens-wrap');
     this.gensWord = document.getElementById('gens-word');
-    this.themeName = 'dark';
-    this.pal = THEMES.dark;
+    this.themeName = 'light';
+    this.pal = THEMES.light;
   }
 
   async start() {
