@@ -76,7 +76,7 @@
 
   <div id="hint" class="panel">
     КЛИК —
-    <span class="gens-wrap"><select id="gens" title="Сколько колен раскрывать по щелчку. Колесо мыши над списком тоже меняет число."></select><span class="caret">&#9662;</span></span>
+    <span class="gens-wrap"><button type="button" id="gens" class="gens-btn" aria-haspopup="listbox" aria-expanded="false" title="Сколько колен раскрывать по щелчку. Колесо мыши над списком тоже меняет число."><span id="gens-val">1</span><svg class="caret" viewBox="0 0 10 6" aria-hidden="true" focusable="false"><path d="M0 0h10L5 6z"/></svg></button><ul id="gens-list" class="panel" role="listbox" hidden></ul></span>
     <span id="gens-word">КОЛЕНО</span><span class="mouse-only"> · SHIFT — ВЕТВЬ</span><br class="mouse-only">
     <span class="mouse-only">ПРАВЫЙ КЛИК — СПРЯТАТЬ · КОЛЕСО — МАСШТАБ</span>
   </div>

@@ -81,7 +81,10 @@ class Observatory {
     this.hi = [];
     this.byId = new Map();
     this.gens = 1;
-    this.gensSel = document.getElementById('gens');
+    this.gensBtn = document.getElementById('gens');
+    this.gensVal = document.getElementById('gens-val');
+    this.gensList = document.getElementById('gens-list');
+    this.gensWrap = document.querySelector('.gens-wrap');
     this.gensWord = document.getElementById('gens-word');
     this.themeName = 'dark';
     this.pal = THEMES.dark;
@@ -313,19 +316,79 @@ class Observatory {
   // ---- how many generations a click opens ------------------------------
 
   buildGens(saved) {
-    const sel = this.gensSel;
     let html = '';
-    for (let i = 1; i <= MAX_GENS; i++) html += '<option value="' + i + '">' + i + '</option>';
-    sel.innerHTML = html;
+    for (let i = 1; i <= MAX_GENS; i++) {
+      html += '<li role="option" data-v="' + i + '" aria-selected="false">' +
+        '<svg class="gens-tick" viewBox="0 0 8 8" aria-hidden="true"><path d="M1 4.3 3 6.3 7 1.7"/></svg>' +
+        '<span>' + i + '</span></li>';
+    }
+    this.gensList.innerHTML = html;
+    this.gensItems = [...this.gensList.children];
     this.setGens(saved >= 1 && saved <= MAX_GENS ? saved : this.gens, true);
   }
 
   setGens(n, quiet) {
     this.gens = Math.max(1, Math.min(MAX_GENS, n | 0));
-    this.gensSel.value = String(this.gens);
+    this.gensVal.textContent = String(this.gens);
     this.gensWord.textContent = generations(this.gens);
+    for (const li of this.gensItems) {
+      li.setAttribute('aria-selected', String(+li.dataset.v === this.gens));
+    }
     if (quiet) return;
     try { localStorage.setItem('rurik-gens', String(this.gens)); } catch (e) {}
+  }
+
+  get gensOpen() { return !this.gensList.hidden; }
+
+  openGens() {
+    const list = this.gensList;
+    list.hidden = false;
+    this.gensBtn.setAttribute('aria-expanded', 'true');
+    // The legend sits at the foot of the window on a narrow screen, so the
+    // list has to know which way it has room to fall.
+    const r = this.gensBtn.getBoundingClientRect();
+    const want = Math.min(list.scrollHeight + 12, 238);
+    list.dataset.drop = (window.innerHeight - r.bottom < want && r.top > want) ? 'up' : 'down';
+    this.markGens(this.gens);
+    this.gensItems[this.gens - 1].scrollIntoView({ block: 'nearest' });
+  }
+
+  closeGens() {
+    this.gensList.hidden = true;
+    this.gensBtn.setAttribute('aria-expanded', 'false');
+    this.markGens(0);
+  }
+
+  markGens(v) {
+    for (const li of this.gensItems) li.classList.toggle('active', +li.dataset.v === v);
+    this.gensActive = v;
+  }
+
+  gensKey(e) {
+    const STEP = { ArrowDown: 1, ArrowUp: -1, PageDown: 5, PageUp: -5 };
+    if (e.key === 'Escape' && this.gensOpen) {
+      e.preventDefault(); this.closeGens(); this.gensBtn.focus(); return;
+    }
+    if (!this.gensOpen) {
+      if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault(); this.openGens();
+      }
+      return;
+    }
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      this.setGens(this.gensActive || this.gens);
+      this.closeGens(); this.gensBtn.focus(); return;
+    }
+    let v = null;
+    if (STEP[e.key] != null) v = (this.gensActive || this.gens) + STEP[e.key];
+    else if (e.key === 'Home') v = 1;
+    else if (e.key === 'End') v = MAX_GENS;
+    if (v == null) return;
+    e.preventDefault();
+    v = Math.max(1, Math.min(MAX_GENS, v));
+    this.markGens(v);
+    this.gensItems[v - 1].scrollIntoView({ block: 'nearest' });
   }
 
   // ---- input -----------------------------------------------------------
@@ -346,11 +409,27 @@ class Observatory {
     document.getElementById('btn-zoom-in').addEventListener('click', () => this.zoomBy(1.3));
     document.getElementById('btn-zoom-out').addEventListener('click', () => this.zoomBy(1 / 1.3));
 
-    this.gensSel.addEventListener('change', () => this.setGens(+this.gensSel.value));
-    // Spinning the wheel over the picker steps through the numbers without
-    // opening it. The steps are accumulated so that one flick of a trackpad
-    // moves one number rather than the whole list.
-    this.gensSel.addEventListener('wheel', (e) => {
+    this.gensBtn.addEventListener('click', () => {
+      if (this.gensOpen) this.closeGens(); else this.openGens();
+    });
+    this.gensList.addEventListener('click', (e) => {
+      const li = e.target.closest('li');
+      if (!li) return;
+      this.setGens(+li.dataset.v);
+      this.closeGens();
+      this.gensBtn.focus();
+    });
+    this.gensList.addEventListener('pointerover', (e) => {
+      const li = e.target.closest('li');
+      if (li) this.markGens(+li.dataset.v);
+    });
+    // The open list scrolls itself; the tree behind it must not zoom.
+    this.gensList.addEventListener('wheel', (e) => e.stopPropagation());
+    // Spinning the wheel over the closed picker steps through the numbers
+    // without opening it. The steps are accumulated so that one flick of a
+    // trackpad moves one number rather than the whole range.
+    this.gensWrap.addEventListener('wheel', (e) => {
+      if (this.gensOpen) return;
       e.preventDefault();
       e.stopPropagation();
       this.gensAcc = (this.gensAcc || 0) + e.deltaY * (e.deltaMode === 1 ? 18 : 1);
@@ -359,6 +438,10 @@ class Observatory {
       this.gensAcc = 0;
       this.setGens(this.gens + step);
     }, { passive: false });
+    this.gensWrap.addEventListener('keydown', (e) => this.gensKey(e));
+    document.addEventListener('pointerdown', (e) => {
+      if (this.gensOpen && !e.target.closest('.gens-wrap')) this.closeGens();
+    }, true);
 
     st.addEventListener('wheel', (e) => {
       e.preventDefault();

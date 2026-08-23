@@ -1,8 +1,8 @@
 /* JetBrains Mono, self-hosted: no request leaves this domain. Both files are
    cut from the upstream variable font down to what the chrome can actually
    print — Latin for the Roman numerals, the zoom readout and SHIFT, the Russian
-   alphabet for the labels, and four marks — which is 165 codepoints and about
-   7 KB apiece. See README for the exact command. Licence in OFL.txt. */
+   alphabet for the labels, and three marks — which is 164 codepoints and about
+   7 KB apiece. The caret and the tick are inline SVG, not glyphs. See README for the exact command. Licence in OFL.txt. */
 @font-face {
   font-family: 'JetBrains Mono';
   font-style: normal;
@@ -184,31 +184,60 @@ a.btn { display: inline-block; line-height: normal; }
 }
 
 /* How many generations a click opens. It sits in the legend, in the legend's
-   own type, and reads as one phrase with it — a control, not a form field. */
+   own type, and reads as one phrase with it — a control, not a form field.
+   The list is ours rather than the browser's: a native popup centres its
+   labels and reserves a gutter for the tick only on the chosen row, so that
+   row's number never lines up with the rest. Here every row carries the same
+   gutter, so they line up whether they are ticked or not — and the list is
+   drawn in the panel's own colours instead of an OS menu's. */
 .gens-wrap { position: relative; display: inline-block; vertical-align: baseline; }
-#gens {
-  appearance: none; -webkit-appearance: none;
+
+.gens-btn {
   font: inherit; letter-spacing: inherit;
   color: var(--panel-text);
   background: var(--btn-hover);
   border: 1px solid var(--sep);
   border-radius: 4px;
-  padding: 1px 17px 1px 7px;
+  padding: 1px 6px 1px 7px;
   margin: 0 1px;
   cursor: pointer;
-  /* Left, deliberately: the open list is drawn by the browser, which puts the
-     tick for the current row in a fixed gutter on the left. Nudging the
-     numbers off that edge leaves the tick hanging away from them. */
+  display: inline-flex; align-items: center; gap: 5px;
+}
+.gens-btn:hover, .gens-btn[aria-expanded="true"] {
+  color: var(--zoom-text); border-color: var(--hover-ring);
+}
+#gens-val { min-width: 2ch; text-align: left; }
+.gens-btn .caret { width: 10px; height: 6px; flex: none; fill: currentColor; opacity: 0.85; }
+
+#gens-list {
+  position: absolute; z-index: 60;
+  left: 50%; transform: translateX(-50%);
+  top: calc(100% + 6px);
+  min-width: 100%;
+  margin: 0; padding: 4px;
+  list-style: none;
+  max-height: 226px; overflow-y: auto; overscroll-behavior: contain;
   text-align: left;
 }
-#gens option { text-align: left; }
-#gens:hover { color: var(--zoom-text); border-color: var(--hover-ring); }
-#gens:focus-visible { outline: 1px solid var(--hover-ring); outline-offset: 1px; }
-.gens-wrap .caret {
-  position: absolute; right: 4px; top: 50%; transform: translateY(-50%);
-  font-size: 11px; line-height: 1; color: var(--panel-text); opacity: 0.8;
-  pointer-events: none;
+#gens-list[data-drop="up"] { top: auto; bottom: calc(100% + 6px); }
+#gens-list li {
+  display: flex; align-items: center; gap: 6px;
+  padding: 3px 9px 3px 5px;
+  border-radius: 4px;
+  cursor: pointer; white-space: nowrap;
+  color: var(--panel-text);
 }
+/* Not `.tick` — the Roman numerals above the columns already own that name,
+   and their rule is absolutely positioned. */
+#gens-list .gens-tick {
+  width: 8px; height: 8px; flex: none;
+  fill: none; stroke: currentColor; stroke-width: 1.5;
+  stroke-linecap: round; stroke-linejoin: round;
+  opacity: 0;
+}
+#gens-list li[aria-selected="true"] { color: var(--zoom-text); }
+#gens-list li[aria-selected="true"] .gens-tick { opacity: 1; }
+#gens-list li.active, #gens-list li:hover { background: var(--btn-hover); }
 
 #tip {
   position: absolute; left: 0; top: 0; z-index: 50;

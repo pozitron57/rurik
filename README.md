@@ -27,12 +27,13 @@ nothing is requested from a third party. `jetbrainsmono-400.woff2` and
 
     fonttools varLib.instancer 'JetBrainsMono[wght].ttf' wght=400 -o static-400.ttf
     pyftsubset static-400.ttf --output-file=jetbrainsmono-400.woff2 --flavor=woff2 \
-      --unicodes='U+0020-007E,U+00B7,U+0401,U+0410-044F,U+0451,U+2014,U+2212,U+25BE' \
+      --unicodes='U+0020-007E,U+00B7,U+0401,U+0410-044F,U+0451,U+2014,U+2212' \
       --layout-features='' --name-IDs='0,1,2,3,4,5,6,13,14' --name-legacy --name-languages='*'
 
 That is Latin for the Roman numerals, the zoom readout and `SHIFT`, the Russian
-alphabet for the labels, and the four marks the chrome prints — 165 codepoints,
-about 7 KB per weight. Repeat with `wght=500` for the second file. The names are
+alphabet for the labels, and the three marks the chrome prints — 164
+codepoints, about 7 KB per weight. The picker's caret and tick are inline SVG,
+so no glyph is carried for them. Repeat with `wght=500` for the second file. The names are
 set in the browser's own sans, because no display face the design tried carries
 Cyrillic. The font is licensed under the OFL, reproduced in `OFL.txt`.
 
