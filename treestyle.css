@@ -55,8 +55,9 @@
   --royal-ink: #6F4207;
   --glow: rgba(169,102,12,0.32);
   --wire: #9A9484;
-  --trace: #1240B4;
-  --trace-glow: rgba(18,64,180,0.45);
+  --trace: #0B3BD6;
+  --trace-glow: rgba(11,59,214,0.55);
+  --trace-bg: rgba(11,59,214,0.10);
   --badge-bg: rgba(28,26,20,0.07);
   --royal-badge-bg: rgba(169,102,12,0.13);
 
@@ -103,6 +104,7 @@
   --wire: #4E5661;
   --trace: #FFFFFF;
   --trace-glow: rgba(255,255,255,0.5);
+  --trace-bg: rgba(255,255,255,0.07);
   --badge-bg: rgba(255,255,255,0.08);
   --royal-badge-bg: rgba(233,169,58,0.16);
 
@@ -281,7 +283,11 @@ body {
    name can be in — resting, flashing, traced — and so it wins over the main
    line's gold on source order. Deliberately not over a flash, which shouts
    with `!important`: what just appeared matters more than what is hovered,
-   and a wire lights up either way. */
+   and a wire lights up either way.
+   The light theme cannot signal with brightness the way the dark one does —
+   its ink is already near-black — so the whole row is tinted, not just the
+   letters, and the blue is turned up until it reads at a glance. */
+.node.lit { background: var(--trace-bg); }
 .node.lit .name { color: var(--trace); }
 #wires path.lit {
   stroke: var(--trace);
