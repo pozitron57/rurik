@@ -41,9 +41,23 @@ so no glyph is carried for them. Repeat with `wght=500` for the second file. The
 set in the browser's own sans, because no display face the design tried carries
 Cyrillic. The font is licensed under the OFL, reproduced in `OFL.txt`.
 
-The file `source.data` contains the list of the dynasty members. One tab (4 spaces) corresponds to the 1st generation, 2 tabs (8 spaces) to the 2nd generation, etc.
+The dynasty itself lives in `source.data`, one person per line, indented four
+spaces per generation — a line belongs to the nearest line above it that is
+indented one generation less. Each line is `name | birth | death`; either date
+may be left empty, and a person with neither carries no columns at all:
 
-`json_gen.py` reads `source.data` file and produce `tree.json` which is used by `tree.js`.
+    Владимир Красное Солнышко | ок. 960 г. | 1015 г.
+        Изяслав Владимирович | | 1001 г.
+        Всеволод Владимирович
+
+Lines starting with `#` are ignored, which is how the disputed branches at the
+foot of the file are kept without being drawn. A person named `invisible` is a
+spacer; the first line of the file is one, and it is the root everybody hangs
+from, which is what lets Вещий Олег and Рюрик stand side by side without
+either being the other's parent.
+
+`json_gen.py` reads `source.data` and writes `tree.json`, which is what the
+page loads. Edit the source, run the script, commit both.
 
 ## Implemented functions:
 
