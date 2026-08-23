@@ -47,6 +47,10 @@ const generations = (n) => {
   return 'КОЛЕН';
 };
 
+// Long enough that reading down a column of names never sets it off, short
+// enough that resting on one asks a question and gets an answer.
+const TIP_DELAY = 850;
+
 const ENT = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' };
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ENT[c]);
 
@@ -64,6 +68,8 @@ class Observatory {
     this.zoomLabel = document.getElementById('zoom');
     this.themeBtn = document.getElementById('btn-theme');
     this.tip = document.getElementById('tip');
+    this.shownN = document.getElementById('shown-n');
+    this.shownAll = document.getElementById('shown-all');
     this.tipName = document.getElementById('tip-name');
     this.tipMeta = document.getElementById('tip-meta');
 
@@ -223,6 +229,10 @@ class Observatory {
 
     this.ruler.innerHTML = s.ticks.map((t) =>
       `<span class="tick" style="left:${t.x}px">${t.label}</span>`).join('');
+
+    this.shownN.textContent = s.nodes.length;
+    // root.total counts everyone below the synthetic root, which is everyone.
+    this.shownAll.textContent = this.root.total;
   }
 
   // ---- camera ----------------------------------------------------------
@@ -490,7 +500,7 @@ class Observatory {
       if (!drag) return;
       const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
       moved = Math.max(moved, Math.abs(dx) + Math.abs(dy));
-      if (moved > 4) this.cancelLongPress();
+      if (moved > 4) { this.cancelLongPress(); this.hideTip(); }
       this.cam.x = drag.cx + dx; this.cam.y = drag.cy + dy;
       this.applyCam();
     });
@@ -538,8 +548,12 @@ class Observatory {
       const card = e.target.closest('[data-id]');
       if (!card || card === this.hoverEl) return;
       this.hoverEl = card;
-      this.showTip(card);
       this.setHi(+card.dataset.id);
+      // The line back to Рюрик lights at once — that is the answer to moving
+      // the pointer. The card of dates is a second question, and waits to be
+      // asked properly.
+      clearTimeout(this.tipT);
+      this.tipT = setTimeout(() => this.showTip(card), TIP_DELAY);
     });
     this.camEl.addEventListener('pointerout', (e) => {
       const card = e.target.closest('[data-id]');
@@ -687,7 +701,11 @@ class Observatory {
     if (y < 36) y = this.tipPos.y - r.top + 18;
     this.tip.style.transform = 'translate(' + x + 'px,' + y + 'px)';
   }
-  hideTip() { this.tip.style.opacity = '0'; this.tip.style.transform = 'translate(-9999px,-9999px)'; }
+  hideTip() {
+    clearTimeout(this.tipT);
+    this.tip.style.opacity = '0';
+    this.tip.style.transform = 'translate(-9999px,-9999px)';
+  }
 }
 
 new Observatory().start();

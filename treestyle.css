@@ -217,6 +217,18 @@ a.btn { display: inline-block; line-height: normal; }
 .btn:hover { background: var(--btn-hover); color: var(--panel-text); }
 .sep { width: 1px; align-self: stretch; background: var(--sep); margin: 3px 4px; }
 
+/* Reads as a gauge, not a control: the zoom readout's colour, no hover. The
+   count is given a fixed width so the panel does not shuffle as the tree opens
+   from two digits to four. */
+.readout {
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.08em;
+  color: var(--zoom-text);
+  padding: 7px 10px;
+  white-space: nowrap;
+  cursor: default;
+}
+#shown-n { display: inline-block; min-width: 4ch; text-align: right; }
+
 #zoombar { position: absolute; bottom: 18px; right: 18px; display: flex; align-items: center; gap: 4px; padding: 4px; }
 .zbtn {
   border: 0; background: transparent;
@@ -309,9 +321,9 @@ a.btn { display: inline-block; line-height: normal; }
 /* The hint describes a mouse, and on a phone it would cover a third of the
    tree, so it steps aside; the toolbar wraps instead of overflowing. */
 
-/* The toolbar and the legend need 847px to share the top row. Below that the
+/* The toolbar and the legend need room to share the top row. Below that the
    legend keeps every word and moves down to the free corner instead. */
-@media (max-width: 880px) {
+@media (max-width: 1040px) {
   #hint { top: auto; bottom: 18px; left: 18px; right: auto; text-align: left; }
 }
 
