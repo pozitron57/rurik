@@ -58,6 +58,12 @@ class Observatory {
     this.ROW_MIN = 16;
     this.opts = {
       rowH: 21, gapX: 50, padX: 8, badgeW: 28, famGap: 1.35, captionH: 10,
+      // Both faces are the system's own. That is what lets the tree be laid
+      // out and painted the moment the data lands, with nothing to wait for —
+      // the one downloaded face, the mono the chrome is set in, never reaches
+      // the measurer. Measure anything in it and that stops being true, and
+      // the fix is `document.fonts.load` for that one face, not
+      // `document.fonts.ready` for every face on the page.
       font: '500 12px Helvetica, Arial, sans-serif',
       captionFont: '400 9px Helvetica, Arial, sans-serif',
     };
@@ -79,8 +85,6 @@ class Observatory {
     // The main dynastic line stays lit at all times: Рюрик → … → Иван IV Грозный.
     const ivan = eng.findByName(this.root, 'Иван IV Грозный');
     this.mainLine = new Set(ivan ? eng.lineage(ivan) : []);
-    // Column widths are measured from the real faces, so wait for them.
-    if (document.fonts && document.fonts.ready) { try { await document.fonts.ready; } catch (e) {} }
 
     let saved = null;
     try { saved = localStorage.getItem('rurik-theme'); } catch (e) {}
