@@ -45,13 +45,20 @@ function adopt(src, parent, depth) {
   return n;
 }
 
+// One bottom-up pass: everybody below a node is that node's children plus
+// everybody below them. Counting each subtree separately, from the top, costs
+// a visit per ancestor per node — fifteen times the work on a tree this deep.
+//
+// The same pass files every node under its id. Ids are minted once, in adopt,
+// and nothing ever renumbers, so the index is built here and never goes stale.
 function index(root) {
-  walk(root, n => {
-    n.kids.forEach((k, i) => { k.ord = i; });
-    let t = 0;
-    walk(n, m => { if (m !== n) t++; });
-    n.total = t;
-  });
+  const byId = new Map();
+  const count = (n) => {
+    byId.set(n.id, n);
+    return (n.total = n.kids.reduce((s, k) => s + 1 + count(k), 0));
+  };
+  count(root);
+  root.byId = byId;
 }
 
 export function findByName(root, name) {
