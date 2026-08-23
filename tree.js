@@ -291,7 +291,6 @@ class Observatory {
   reveal(anchorId, fresh) {
     const anchor = this.byId.get(anchorId);
     if (!anchor) return;
-    const from = this.cam.x;
     const s = this.cam.s, pad = 24, view = this.viewport().w;
     const left = anchor.x;
     let right = left;
@@ -305,43 +304,6 @@ class Observatory {
       if (right * s + x > view - pad) x = view - pad - right * s;
       this.cam.x = x;
     }
-    if (this.cam.x !== from) this.glide();
-  }
-
-  // The camera crosses the distance rather than jumping it, so the eye can
-  // follow the tree sideways instead of re-finding it. Handed to a CSS
-  // transition, not a loop: in a background tab a rAF loop would never run
-  // and would leave the camera stranded half way.
-  glide() {
-    // Where the camera is *painted* right now, which is still the pre-click
-    // position: applyCam has not run yet. stopGlide compares against this to
-    // tell a transition that progressed from one that never started.
-    const m = new DOMMatrixReadOnly(getComputedStyle(this.camEl).transform);
-    this.glideFrom = { x: m.e, y: m.f };
-    this.gliding = true;
-    this.camEl.classList.add('gliding');
-    this.ruler.classList.add('gliding');
-    clearTimeout(this.glideT);
-    this.glideT = setTimeout(() => this.stopGlide(), 420);
-  }
-
-  // Anything the reader does outranks the glide. Taking the painted position
-  // first means grabbing a moving tree does not snap it forward — but only
-  // when it really moved: a background tab runs no transition at all, and
-  // adopting its untouched transform would quietly undo the pan.
-  stopGlide() {
-    if (!this.gliding) return;
-    this.gliding = false;
-    clearTimeout(this.glideT);
-    const m = new DOMMatrixReadOnly(getComputedStyle(this.camEl).transform);
-    const f = this.glideFrom;
-    this.camEl.classList.remove('gliding');
-    this.ruler.classList.remove('gliding');
-    if (Math.abs(m.e - f.x) > 0.5 || Math.abs(m.f - f.y) > 0.5) {
-      this.cam.x = m.e;
-      this.cam.y = m.f;
-    }
-    this.applyCam();
   }
 
   zoomBy(f, cx, cy) {
@@ -505,14 +467,12 @@ class Observatory {
 
     st.addEventListener('wheel', (e) => {
       e.preventDefault();
-      this.stopGlide();
       this.zoomBy(Math.pow(0.9988, e.deltaY * (e.deltaMode === 1 ? 18 : 1)), e.clientX, e.clientY);
     }, { passive: false });
 
     let drag = null, moved = 0;
     const pts = new Map();
     st.addEventListener('pointerdown', (e) => {
-      this.stopGlide();
       if (e.target.closest('.panel')) return;
       pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
       if (e.button === 2) return;
@@ -550,7 +510,6 @@ class Observatory {
       if (!card) return;
       const n = this.find(+card.dataset.id);
       if (!n) return;
-      this.stopGlide();
       const before = new Set(this.state.nodes.map((v) => v.id));
       eng.toggle(n, e.altKey || e.shiftKey ? MAX_GENS : this.gens);
       this.relayout(n.id, () => {

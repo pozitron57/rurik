@@ -101,11 +101,6 @@ body {
 
 #cam { position: absolute; top: 0; left: 0; transform-origin: 0 0; will-change: transform; }
 
-/* Only ever on for the sideways glide after an opening — dragging and zooming
-   must stay welded to the pointer. The ruler carries it too, or the numerals
-   would arrive after their columns. */
-#cam.gliding, #ruler.gliding { transition: transform 380ms var(--ease); }
-
 #bands, #wires { position: absolute; top: 0; left: 0; overflow: visible; pointer-events: none; }
 #cards { position: absolute; top: 0; left: 0; }
 
