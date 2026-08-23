@@ -67,6 +67,11 @@ class Observatory {
     this.ruler = document.getElementById('ruler');
     this.zoomLabel = document.getElementById('zoom');
     this.themeBtn = document.getElementById('btn-theme');
+    this.themeLabel = document.getElementById('theme-label');
+    this.toolbar = document.getElementById('toolbar');
+    this.hintPanel = document.getElementById('hint');
+    this.gensCtl = document.getElementById('gens-ctl');
+    this.narrow = window.matchMedia('(max-width: 760px)');
     this.tip = document.getElementById('tip');
     this.shownN = document.getElementById('shown-n');
     this.shownAll = document.getElementById('shown-all');
@@ -111,6 +116,7 @@ class Observatory {
     try { savedGens = parseInt(localStorage.getItem('rurik-gens'), 10); } catch (e) {}
     this.buildGens(savedGens);
     this.applyTheme();
+    this.placeGens();
     this.bind();
     this.relayout(null, () => this.fit());
   }
@@ -342,7 +348,7 @@ class Observatory {
     const P = this.pal;
     document.documentElement.setAttribute('data-theme', this.themeName);
     this.stops.forEach((s, i) => s.setAttribute('stop-color', P.grad[i] || P.grad[0]));
-    this.themeBtn.textContent = P.label;
+    this.themeLabel.textContent = P.label;
   }
 
   // ---- how many generations a click opens ------------------------------
@@ -368,6 +374,15 @@ class Observatory {
     }
     if (quiet) return;
     try { localStorage.setItem('rurik-gens', String(this.gens)); } catch (e) {}
+  }
+
+  // On a phone the picker belongs in the one bar across the top; on a wider
+  // screen it belongs in the legend, reading as one phrase with it.
+  placeGens() {
+    const wantBar = this.narrow.matches;
+    if (wantBar === (this.gensCtl.parentElement === this.toolbar)) return;
+    if (wantBar) this.toolbar.insertBefore(this.gensCtl, this.toolbar.firstElementChild);
+    else this.hintPanel.prepend(this.gensCtl);
   }
 
   get gensOpen() { return !this.gensList.hidden; }
@@ -561,7 +576,11 @@ class Observatory {
       if (e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest('[data-id]') === card) return;
       this.hoverEl = null; this.hideTip(); this.clearHi();
     });
-    window.addEventListener('resize', () => this.applyCam());
+    // Both, deliberately: the media query is the right signal, but it does not
+    // always deliver on a programmatic resize, and placeGens costs one
+    // comparison when there is nothing to move.
+    this.narrow.addEventListener('change', () => { this.closeGens(); this.placeGens(); });
+    window.addEventListener('resize', () => { this.placeGens(); this.applyCam(); });
   }
 
   pinchState(pts) {

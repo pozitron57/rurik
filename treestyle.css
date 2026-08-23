@@ -206,6 +206,10 @@ body {
 }
 
 #toolbar { position: absolute; top: 44px; left: 18px; display: flex; align-items: center; gap: 2px; padding: 4px; }
+.bar-scroll { display: contents; }
+
+#btn-theme { display: inline-flex; align-items: center; gap: 5px; }
+.theme-icon { display: none; width: 13px; height: 13px; flex: none; fill: currentColor; }
 .btn {
   border: 0; background: transparent;
   color: var(--panel-text);
@@ -327,14 +331,55 @@ a.btn { display: inline-block; line-height: normal; }
   #hint { top: auto; bottom: 18px; left: 18px; right: auto; text-align: left; }
 }
 
+/* ---- phones ------------------------------------------------------------ */
+/* One bar across the top, in the band the generation numerals had — they are
+   the first thing to go, being the least use on a screen this size. Everything
+   else is cut to its shortest legible form: the theme is a sun or a moon, the
+   link is its first letter, the count of who is on screen and the zoom
+   percentage step out entirely. What still does not fit scrolls sideways. */
+
 @media (max-width: 760px) {
-  /* The legend keeps its generation picker on a phone; what goes is the half
-     of it that describes a mouse nobody is holding. */
-  .mouse-only { display: none; }
-  #hint { bottom: 12px; left: 12px; }
-  #toolbar { top: 38px; left: 10px; right: 10px; flex-wrap: wrap; }
-  /* A separator that lands at the end of a wrapped row reads as a stray tick. */
+  #strip { display: none; }
+  .mouse-only, .wide-only { display: none; }
+  /* Its picker has been moved into the bar; the rest of the legend is about a
+     mouse nobody is holding. */
+  #hint { display: none; }
+
+  #toolbar {
+    top: 0; left: 0; right: 0;
+    display: flex; align-items: center; gap: 4px;
+    padding: 3px 8px;
+    border-width: 0 0 1px 0;
+    border-radius: 0;
+  }
+  .bar-scroll {
+    display: flex; align-items: center; gap: 1px;
+    flex: 1 1 auto; min-width: 0;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .bar-scroll::-webkit-scrollbar { display: none; }
+
+  .btn { padding: 6px 7px; font-size: 9.5px; letter-spacing: 0.04em; }
   #toolbar .sep { display: none; }
-  .btn { padding: 7px 8px; font-size: 10px; letter-spacing: 0.05em; }
+  #toolbar .readout { display: none; }
+
+  /* The picker sits outside the scroller, so its list is not clipped by it. */
+  #toolbar #gens-ctl {
+    flex: none;
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 6px 2px 6px 0;
+    font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.04em;
+    color: var(--panel-text); white-space: nowrap;
+  }
+
+  /* The icon shows the theme the button switches to, same as the label did. */
+  .icon-moon { display: inline-block; }
+  :root[data-theme="dark"] .icon-moon { display: none; }
+  :root[data-theme="dark"] .icon-sun { display: inline-block; }
+
+  #zoom { display: none; }
   #zoombar { bottom: 12px; right: 12px; }
 }
