@@ -34,6 +34,10 @@ const TIP_DELAY = 850;
 // one.
 const hovers = (e) => e.pointerType !== 'touch';
 
+// The margin the tree keeps from the left of the screen, both when a click
+// brings an opening into view and when the page first opens on a phone.
+const EDGE = 24;
+
 const ENT = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' };
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ENT[c]);
 
@@ -125,7 +129,7 @@ class Observatory {
     this.applyTheme();
     this.placeGens();
     this.bind();
-    this.relayout(null, () => this.fit());
+    this.relayout(null, () => this.openingView());
   }
 
   // ---- layout ----------------------------------------------------------
@@ -392,6 +396,24 @@ class Observatory {
     this.applyCam();
   }
 
+  // What the page opens on. A desktop window can hold the whole tree at a size
+  // the names still read at, so it gets the fit. A phone cannot: fitting six
+  // generations into 375 points leaves the names as grey smudges. So the phone
+  // opens at full size instead — Рюрик against the left edge, and as much of
+  // what grows from him as the screen holds. Everything else is one swipe away,
+  // and УМЕСТИТЬ is still there for the whole picture.
+  openingView() {
+    if (!this.narrow.matches) { this.fit(); return; }
+    const r = this.viewport();
+    const h = this.state.height || 1;
+    this.cam.s = 1;
+    this.cam.x = EDGE;
+    // Centred while the opening generations fit; otherwise from the top down.
+    const room = r.h - 80;
+    this.cam.y = h < room ? 40 + (room - h) / 2 : 40;
+    this.applyCam();
+  }
+
   // Slides the camera sideways — never zooms, the scale is the reader's to
   // set — so that what a click just opened is on screen. When the new
   // generations are too wide for that, the clicked one goes to the left edge
@@ -399,7 +421,7 @@ class Observatory {
   reveal(anchorId, fresh) {
     const anchor = this.shown.get(anchorId);
     if (!anchor) return;
-    const s = this.cam.s, pad = 24, view = this.viewport().w;
+    const s = this.cam.s, pad = EDGE, view = this.viewport().w;
     const left = anchor.x;
     let right = left;
     for (const v of fresh) right = Math.max(right, v.x + v.w);
