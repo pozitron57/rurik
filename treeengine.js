@@ -43,6 +43,7 @@ function adopt(src, parent, depth) {
     name: src.name || '',
     birth: src.birth || '',
     death: src.death || '',
+    standalone: src.standalone === true,
     depth, parent,
     kids: [],
     open: false,
@@ -130,7 +131,7 @@ export function toggle(n, gens) {
 }
 
 export function hide(n) {
-  if (!n.parent || !n.parent.parent) return false; // keep top-level anchors
+  if (n.standalone || !n.parent || !n.parent.parent) return false; // keep standalone and top-level anchors
   n.hidden = true;
   return true;
 }
@@ -138,7 +139,11 @@ export function hide(n) {
 export function lineage(n) {
   const out = [];
   let m = n;
-  while (m && m.parent) { out.push(m.id); m = m.parent; }
+  while (m && m.parent) {
+    out.push(m.id);
+    if (m.standalone) break;
+    m = m.parent;
+  }
   return out;
 }
 
@@ -211,7 +216,11 @@ function tidy(root, unit, famGap) {
     let def = v.kids[0];
     for (const k of v.kids) { firstWalk(k); def = apportion(k, def); }
     executeShifts(v);
-    const mid = (v.kids[0].prelim + v.kids[v.kids.length - 1].prelim) / 2;
+    // Standalone companions occupy a row but do not pull a parent away from
+    // their children: Rurik lines up with Igor, while Olga sits above him.
+    const linked = v.kids.filter(k => !k.n.standalone);
+    const anchors = linked.length ? linked : v.kids;
+    const mid = (anchors[0].prelim + anchors[anchors.length - 1].prelim) / 2;
     const w = prev(v);
     if (w) { v.prelim = w.prelim + sep(w, v); v.mod = v.prelim - mid; }
     else v.prelim = mid;
@@ -308,7 +317,7 @@ export function layout(root, o) {
 
   const links = [];
   for (const n of vis) {
-    if (!n.parent || !n.parent.parent) continue;
+    if (n.standalone || !n.parent || !n.parent.parent) continue;
     const p = byId.get(n.parent.id), c = byId.get(n.id);
     if (!p || !c) continue;
     const sx = p.x + p.w, sy = p.y, ex = c.x, ey = c.y;

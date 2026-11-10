@@ -7,7 +7,7 @@ source.data is one person per line, indented four spaces per generation.
 Indentation alone describes the tree: a line is a child of the nearest line
 above it that is indented one generation less.
 
-    name | birth | death
+    name | birth | death | standalone
 
 Either date may be left empty, and a person with neither carries no columns
 at all:
@@ -15,6 +15,9 @@ at all:
     Владимир Красное Солнышко | ок. 960 г. | 1015 г.
         Изяслав Владимирович | | 1001 г.
         Всеволод Владимирович
+
+The optional fourth field, `standalone`, keeps a person in that position
+without a parent line or ancestry highlight through the enclosing branch.
 
 Lines starting with `#` are ignored, which is how the disputed branches at the
 foot of the file are kept without being drawn.
@@ -57,6 +60,8 @@ def parse(path):
                 'birth': birth,
                 'death': death,
             }
+            if len(fields) > 3 and fields[3] == 'standalone':
+                person['standalone'] = True
 
             if depth == 0:
                 root = person

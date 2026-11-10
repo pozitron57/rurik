@@ -56,6 +56,12 @@ spacer; the first line of the file is one, and it is the root everybody hangs
 from, which is what lets Вещий Олег and Рюрик stand side by side without
 either being the other's parent.
 
+An optional fourth field, `standalone`, keeps a person in the indicated column
+without a line from the enclosing branch. Olga uses it to sit above Igor
+without being drawn or highlighted as Rurik's daughter:
+
+    Ольга, жена Игоря | ок. 890 г. | 969 г. | standalone
+
 `json_gen.py` reads `source.data` and writes `tree.json`, which is what the
 page loads. Edit the source, run the script, commit both.
 
