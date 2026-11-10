@@ -151,9 +151,8 @@ body {
 }
 #stage.grabbing { cursor: grabbing; }
 
+#scene { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
 #cam { position: absolute; top: 0; left: 0; transform-origin: 0 0; will-change: transform; }
-
-#bands, #wires { position: absolute; top: 0; left: 0; overflow: visible; pointer-events: none; }
 #cards { position: absolute; top: 0; left: 0; }
 
 /* Every other column is washed with one gradient measured in tree coordinates —

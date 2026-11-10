@@ -38,6 +38,12 @@ const hovers = (e) => e.pointerType !== 'touch';
 // brings an opening into view and when the page first opens on a phone.
 const EDGE = 24;
 
+// On a phone, keep this much already-painted tree beyond every screen edge.
+// The camera can travel through the reserve without touching the DOM; only
+// crossing it asks for a new crop. Measured in screen pixels so it feels the
+// same at every zoom.
+const CULL_PAD = 120;
+
 const ENT = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' };
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ENT[c]);
 
@@ -52,7 +58,7 @@ class Observatory {
   constructor() {
     this.stage = document.getElementById('stage');
     this.camEl = document.getElementById('cam');
-    this.bandsSvg = document.getElementById('bands');
+    this.svgWorld = document.getElementById('svg-world');
     this.bandRects = document.getElementById('band-rects');
     this.grad = document.getElementById('bandFade');
     this.wires = document.getElementById('wires');
@@ -197,6 +203,7 @@ class Observatory {
     }
     this.tickEls = [...this.ruler.querySelectorAll('.tick')];
     this.tickKey = null;
+    this.tickScale = null;
     if (then) then(); else this.applyCam();
     // Only once the camera has settled, because it decides who is under the
     // pointer now.
@@ -233,18 +240,16 @@ class Observatory {
   render() {
     const s = this.state;
 
-    this.bandsSvg.setAttribute('width', s.width);
-    this.bandsSvg.setAttribute('height', s.height);
     this.grad.setAttribute('y2', s.height);
-    this.bandRects.innerHTML = s.bands.map((b) =>
-      `<rect x="${b.x}" y="-44" width="${b.w}" height="${b.h}"></rect>`).join('');
-
-    this.wires.setAttribute('width', s.width);
-    this.wires.setAttribute('height', s.height);
-    this.wires.innerHTML = s.links.map((l) =>
-      `<path d="${l.d}" data-link="${l.id}"${l.royal ? ' class="royal"' : ''}></path>`).join('');
-
+    // Build the logical scene once per layout. Mobile viewport culling only
+    // changes display afterwards, so cards keep their identity for flashes,
+    // long presses and incremental relayouts.
+    this.paintBands(s.bands);
+    this.paintWires(s.links);
     this.paintCards(s.nodes);
+    this.sceneMode = null;
+    this.cullBounds = null;
+    this.cullScale = null;
 
     this.ruler.innerHTML = s.ticks.map((t) =>
       `<span class="tick" style="left:${t.x}px">${t.label}</span>`).join('');
@@ -252,6 +257,83 @@ class Observatory {
     this.shownN.textContent = s.nodes.length;
     // root.total counts everyone below the synthetic root, which is everyone.
     this.shownAll.textContent = this.root.total;
+  }
+
+  // A fully-open tree is more than five thousand tree-pixels wide. At fit it
+  // rasterises into a tiny picture and is cheap; at a readable phone zoom the
+  // same promoted layer becomes a large tiled surface. The fixed SVG root
+  // clips vectors at the screen, just like the old implementation did. At
+  // every larger phone zoom, cull the HTML cards to the viewport plus
+  // CULL_PAD as well. The crop moves only after the screen consumes its
+  // reserve, so ordinary pointer frames still do transform writes and no
+  // scene rebuild.
+  paintViewport() {
+    const s = this.state;
+    if (!s.nodes.length) return;
+
+    const r = this.cullViewport || (this.cullViewport = this.viewport());
+    const phone = this.narrow.matches;
+    const wholeIsSmall = phone &&
+      s.width * this.cam.s <= r.w + CULL_PAD * 2 &&
+      s.height * this.cam.s <= r.h + CULL_PAD * 2;
+
+    if (!phone || wholeIsSmall) {
+      if (this.sceneMode === 'all') return;
+      for (const n of s.nodes) this.setCulled(this.painted.get(n.id), false);
+      this.sceneMode = 'all';
+      this.cullBounds = null;
+      this.cullScale = this.cam.s;
+      return;
+    }
+
+    const scale = this.cam.s || 1;
+    const view = {
+      left: -this.cam.x / scale,
+      top: -this.cam.y / scale,
+      right: (r.w - this.cam.x) / scale,
+      bottom: (r.h - this.cam.y) / scale,
+    };
+    // Zooming in keeps the old crop safe, but makes its layer larger on screen;
+    // prune after one ordinary zoom step. Zooming out is already covered by
+    // the containment test as the viewport expands.
+    const scaleMoved = !this.cullScale || scale / this.cullScale > 1.25;
+    const inside = this.cullBounds &&
+      view.left >= this.cullBounds.left && view.top >= this.cullBounds.top &&
+      view.right <= this.cullBounds.right && view.bottom <= this.cullBounds.bottom;
+    if (this.sceneMode === 'crop' && !scaleMoved && inside) return;
+
+    const pad = CULL_PAD / scale;
+    const bounds = {
+      left: Math.floor(view.left - pad),
+      top: Math.floor(view.top - pad),
+      right: Math.ceil(view.right + pad),
+      bottom: Math.ceil(view.bottom + pad),
+    };
+    for (const n of s.nodes) {
+      const visible = n.x + n.w + 20 >= bounds.left && n.x - 20 <= bounds.right &&
+        n.ty + (n.partial ? 46 : 38) >= bounds.top && n.ty - 20 <= bounds.bottom;
+      this.setCulled(this.painted.get(n.id), !visible);
+    }
+
+    this.sceneMode = 'crop';
+    this.cullBounds = bounds;
+    this.cullScale = scale;
+  }
+
+  setCulled(el, off) {
+    if (!el || el._culled === off) return;
+    el._culled = off;
+    el.style.display = off ? 'none' : '';
+  }
+
+  paintBands(bands) {
+    this.bandRects.innerHTML = bands.map((b) =>
+      `<rect x="${b.x}" y="-44" width="${b.w}" height="${b.h}"></rect>`).join('');
+  }
+
+  paintWires(links) {
+    this.wires.innerHTML = links.map((l) =>
+      `<path d="${l.d}" data-link="${l.id}"${l.royal ? ' class="royal"' : ''}></path>`).join('');
   }
 
   // ---- cards -----------------------------------------------------------
@@ -304,7 +386,7 @@ class Observatory {
   cardHTML(n) {
     return `<div class="node${n.royal ? ' royal' : ''}${(n.depth - 1) % 2 ? ' band-b' : ''}` +
       `${n.badge ? ' badged' : ''}${n.partial ? ' partial' : ''}" data-id="${n.id}"` +
-      ` style="transform:translate(${n.x}px,${n.ty}px)">` +
+      ` style="left:${n.x}px;top:${n.ty}px">` +
       `<span class="dot"></span>` +
       `<span class="name">${esc(n.name)}</span>` +
       (n.badge ? `<span class="badge">${n.count}</span>` : '') +
@@ -318,7 +400,8 @@ class Observatory {
   recard(el, n) {
     const was = el._was;
     if (was.x !== n.x || was.ty !== n.ty) {
-      el.style.transform = 'translate(' + n.x + 'px,' + n.ty + 'px)';
+      el.style.left = n.x + 'px';
+      el.style.top = n.ty + 'px';
     }
     if (was.badge !== n.badge) {
       el.classList.toggle('badged', n.badge);
@@ -340,9 +423,25 @@ class Observatory {
   // ---- camera ----------------------------------------------------------
 
   applyCam() {
+    if (this.camFrame) {
+      cancelAnimationFrame(this.camFrame);
+      this.camFrame = 0;
+    }
     const c = this.cam;
-    this.camEl.style.transform = 'translate(' + c.x + 'px,' + c.y + 'px) scale(' + c.s + ')';
-    this.ruler.style.transform = 'translateX(' + c.x + 'px) scale(' + c.s + ',1)';
+    this.paintViewport();
+    this.svgWorld.setAttribute('transform',
+      'translate(' + c.x + ' ' + c.y + ') scale(' + c.s + ')');
+    this.camEl.style.transform = 'translate3d(' + c.x + 'px,' + c.y + 'px,0) scale(' + c.s + ')';
+    if (!this.narrow.matches) {
+      this.ruler.style.transform = 'translateX(' + c.x + 'px) scale(' + c.s + ',1)';
+    }
+    // Panning changes only x/y. Measuring and inverse-scaling every generation
+    // label on every pointer event forced work whose answer could not have
+    // changed — and the whole ruler is hidden on a phone anyway.
+    if (this.tickScale === c.s) return;
+    this.tickScale = c.s;
+    this.zoomLabel.textContent = Math.round(c.s * 100) + '%';
+    if (this.narrow.matches) return;
     // Each numeral sits over the middle of its column. It is inverse-scaled to
     // stay legible, so the half-width it must back off by is a screen measure
     // divided by the zoom to land in tree coordinates.
@@ -351,8 +450,17 @@ class Observatory {
         t.style.transform = 'translateX(' + (-(t.offsetWidth / 2) / c.s) + 'px) scaleX(' + (1 / c.s) + ')';
       }
     }
-    this.zoomLabel.textContent = Math.round(c.s * 100) + '%';
     this.thinTicks();
+  }
+
+  // Touchmove can arrive more often than the display can paint. Keep the
+  // newest camera coordinates, but write them only once for the next frame.
+  queueCam() {
+    if (this.camFrame) return;
+    this.camFrame = requestAnimationFrame(() => {
+      this.camFrame = 0;
+      this.applyCam();
+    });
   }
 
   // Roman numerals stop being labels once they touch, so drop them by stride.
@@ -436,7 +544,7 @@ class Observatory {
     }
   }
 
-  zoomBy(f, cx, cy) {
+  zoomBy(f, cx, cy, queued) {
     const r = this.stage.getBoundingClientRect();
     const px = cx == null ? r.width / 2 : cx - r.left;
     const py = cy == null ? r.height / 2 : cy - r.top;
@@ -445,7 +553,7 @@ class Observatory {
     c.x = px - (px - c.x) * (ns / c.s);
     c.y = py - (py - c.y) * (ns / c.s);
     c.s = ns;
-    this.applyCam();
+    if (queued) this.queueCam(); else this.applyCam();
   }
 
   // ---- theme -----------------------------------------------------------
@@ -604,7 +712,7 @@ class Observatory {
 
     st.addEventListener('wheel', (e) => {
       e.preventDefault();
-      this.zoomBy(Math.pow(0.9988, e.deltaY * (e.deltaMode === 1 ? 18 : 1)), e.clientX, e.clientY);
+      this.zoomBy(Math.pow(0.9988, e.deltaY * (e.deltaMode === 1 ? 18 : 1)), e.clientX, e.clientY, true);
     }, { passive: false });
 
     let drag = null, moved = 0;
@@ -613,7 +721,10 @@ class Observatory {
       if (e.target.closest('.panel')) return;
       pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
       if (e.button === 2) return;
-      if (pts.size === 2) { drag = null; this.pinch = this.pinchState(pts); return; }
+      if (pts.size === 2) {
+        this.cancelLongPress();
+        drag = null; this.pinch = this.pinchState(pts); return;
+      }
       drag = { x: e.clientX, y: e.clientY, cx: this.cam.x, cy: this.cam.y };
       moved = 0;
       st.classList.add('grabbing');
@@ -626,16 +737,27 @@ class Observatory {
       if (pts.size === 2 && this.pinch) { this.doPinch(pts); return; }
       if (!drag) return;
       const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+      const wasMoved = moved > 4;
       moved = Math.max(moved, Math.abs(dx) + Math.abs(dy));
-      if (moved > 4) { this.cancelLongPress(); this.hideTip(); }
+      if (!wasMoved && moved > 4) {
+        this.cancelLongPress(); this.hideTip();
+        // Once this is certainly a drag, keep its stream on the stage instead
+        // of hit-testing hundreds of cards as they pass under the finger.
+        if (st.setPointerCapture && (!st.hasPointerCapture || !st.hasPointerCapture(e.pointerId))) {
+          try { st.setPointerCapture(e.pointerId); } catch (err) {}
+        }
+      }
       this.cam.x = drag.cx + dx; this.cam.y = drag.cy + dy;
-      this.applyCam();
+      this.queueCam();
     });
     const up = (e) => {
       pts.delete(e.pointerId);
       if (pts.size < 2) this.pinch = null;
       drag = null; st.classList.remove('grabbing');
       this.cancelLongPress();
+      // Do not leave the very last movement waiting if the finger came up
+      // before the next animation frame.
+      if (this.camFrame) this.applyCam();
     };
     st.addEventListener('pointerup', up);
     st.addEventListener('pointercancel', up);
@@ -684,6 +806,7 @@ class Observatory {
       this.tipT = setTimeout(() => this.showTip(card), TIP_DELAY);
     });
     this.camEl.addEventListener('pointerout', (e) => {
+      if (!hovers(e)) return;
       const card = e.target.closest('[data-id]');
       if (!card) return;
       if (e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest('[data-id]') === card) return;
@@ -692,8 +815,16 @@ class Observatory {
     // Both, deliberately: the media query is the right signal, but it does not
     // always deliver on a programmatic resize, and placeGens costs one
     // comparison when there is nothing to move.
-    this.narrow.addEventListener('change', () => { this.closeGens(); this.placeGens(); });
-    window.addEventListener('resize', () => { this.placeGens(); this.applyCam(); });
+    this.narrow.addEventListener('change', () => {
+      this.closeGens(); this.placeGens();
+      this.cullViewport = null; this.sceneMode = null; this.tickScale = null;
+      this.applyCam();
+    });
+    window.addEventListener('resize', () => {
+      this.placeGens();
+      this.cullViewport = null; this.sceneMode = null; this.tickScale = null;
+      this.applyCam();
+    });
   }
 
   pinchState(pts) {
@@ -704,7 +835,7 @@ class Observatory {
     const a = [...pts.values()];
     const d = Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y);
     if (!this.pinch.d) return;
-    this.zoomBy((this.pinch.s * (d / this.pinch.d)) / this.cam.s, (a[0].x + a[1].x) / 2, (a[0].y + a[1].y) / 2);
+    this.zoomBy((this.pinch.s * (d / this.pinch.d)) / this.cam.s, (a[0].x + a[1].x) / 2, (a[0].y + a[1].y) / 2, true);
   }
 
   startLongPress(card) {
@@ -730,10 +861,16 @@ class Observatory {
     this.hideTip();
     this.relayout(parentId, () => {
       this.applyCam();
-      const target = this.painted.get(parentId);
+      // The parent may sit just beyond the mobile paint window. Its model
+      // position is the authoritative destination and avoids forcing layout
+      // (or reading a zero rectangle from a culled card).
+      const target = this.shown.get(parentId);
       if (target) {
-        const to = target.getBoundingClientRect();
         const s = this.cam.s;
+        const to = {
+          left: stage.left + this.cam.x + target.x * s,
+          top: stage.top + this.cam.y + target.ty * s,
+        };
         ghost.style.cssText += ';position:absolute;margin:0;pointer-events:none;z-index:40;' +
           'left:' + (from.left - stage.left) + 'px;top:' + (from.top - stage.top) + 'px;' +
           'transform-origin:0 0;';
@@ -799,7 +936,7 @@ class Observatory {
     for (const i of eng.lineage(n)) {
       const card = this.painted.get(i);
       if (card) { card.classList.add('lit'); this.hi.push(card); }
-      const path = this.camEl.querySelector('[data-link="' + i + '"]');
+      const path = this.wires.querySelector('[data-link="' + i + '"]');
       if (path) { path.classList.add('lit'); this.hi.push(path); }
     }
   }
